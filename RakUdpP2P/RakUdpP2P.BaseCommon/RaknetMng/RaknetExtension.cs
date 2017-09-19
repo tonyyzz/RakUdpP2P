@@ -10,12 +10,14 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 {
 	public static class RaknetExtension
 	{
+		private static bool canOutput = true;
 		public static string GetMessageIDTypeStr(this DefaultMessageIDTypes defaultMessageIDType)
 		{
 			return string.Format(@"[{0}-{1}]", (int)defaultMessageIDType, defaultMessageIDType.ToString());
 		}
 		public static void WriteMsgTypeInfo(this DefaultMessageIDTypes defaultMessageIDType, RakPeerInterface rakPeer, string address, ushort port, string msg)
 		{
+			if (!canOutput) { return; }
 			Console.ForegroundColor = ConsoleColor.Green;
 			string msgStr = string.Format(@"[{0}:{1}]-[{2}]-[{3}:{4}]-{5}：{6}",
 				rakPeer.GetMyBoundAddress().ToString(false),
@@ -32,6 +34,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		public static void WriteMsgTypeError(this DefaultMessageIDTypes defaultMessageIDType, string errorMsg)
 		{
+			if (!canOutput) { return; }
 			Console.ForegroundColor = ConsoleColor.Yellow;
 			string msgStr = string.Format(@"{0} - {1}  {2}", defaultMessageIDType.GetMessageIDTypeStr(), errorMsg, DateTime.Now.GetDefaultFormat());
 			Console.WriteLine(msgStr);
@@ -47,11 +50,20 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		public static void WriteWarning(string msg)
 		{
+			if (!canOutput) { return; }
 			Console.ForegroundColor = ConsoleColor.Yellow;
 			Console.WriteLine(msg);
 			Console.ResetColor();
 			Debug.WriteLine(msg);
-			throw new Exception(msg);
+		}
+
+		public static void WriteInfo(string msg)
+		{
+			if (!canOutput) { return; }
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine(msg);
+			Console.ResetColor();
+			Debug.WriteLine(msg);
 		}
 	}
 }

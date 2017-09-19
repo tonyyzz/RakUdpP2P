@@ -12,17 +12,15 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 	{
 		private UDPProxyServer udpProxyServer = null;
 
+		private RaknetAddress _coordinatorAddress = null;
+
 		public RaknetUdpProxyServer()
 		{
-
+			udpProxyServer = new UDPProxyServer();
 		}
 
 		public RaknetUdpProxyServer Start(RaknetAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
-			RaknetCSRunTest.JudgeRaknetCanRun();
-			EventRegister();
-			rakPeer = RakPeerInterface.GetInstance();
-			udpProxyServer = new UDPProxyServer();
 			rakPeer.AttachPlugin(udpProxyServer);
 			udpProxyServer.SetResultHandler(new MyUDPProxyServerResultHandler());
 			rakPeer.SetMaximumIncomingConnections(maxConnCount);
@@ -38,24 +36,12 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 				RaknetExtension.WriteWarning(string.Format(@"{0}端口被占用", socketDescriptor.port));
 				return this;
 			}
-			List<int> startList = new List<int>()
-			{
-				(int)StartupResult.RAKNET_STARTED,
-				(int)StartupResult.RAKNET_ALREADY_STARTED,
-			};
-			if (startList.Any(m => m == (int)startResult))
-			{
-
-			}
-			else
-			{
-
-			}
 			return this;
 		}
 
 		public bool Connect(RaknetAddress coordinatorAddress)
 		{
+			_coordinatorAddress = coordinatorAddress;
 			ReceiveThreadStart();
 			var connectResult = rakPeer.Connect(coordinatorAddress.Address, coordinatorAddress.Port, "", 0);
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED) //尝试连接开始
@@ -63,15 +49,23 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 				OnConnectionRequestAccepted += RaknetUdpProxyServer_OnConnectionRequestAccepted;
 				return true;
 			}
+			isThreadRunning = false;
 			return false;
 		}
 
-
-
-		public RaknetAddress GetMyAddress()
+		// <summary>
+		/// 停止
+		/// </summary>
+		/// <param name="beforeAction"></param>
+		public void Stop(Action beforeAction = null)
 		{
-			SystemAddress systemAddress = rakPeer.GetMyBoundAddress();
-			return new RaknetAddress(systemAddress.ToString(false), systemAddress.GetPort());
+			beforeAction?.Invoke();
+			string myAddress = GetMyAddress().ToString();
+			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_coordinatorAddress.Address, _coordinatorAddress.Port)), true);
+			isThreadRunning = false;
+			rakPeer.Shutdown(10);
+			RakPeerInterface.DestroyInstance(rakPeer);
+			Console.WriteLine("UdpProxyServer停止了：{0}", myAddress);
 		}
 
 		private void RaknetUdpProxyServer_OnConnectionRequestAccepted(string address, ushort port)
@@ -84,22 +78,22 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		{
 			public override void OnLoginSuccess(RakString usedPassword, UDPProxyServer proxyServerPlugin)
 			{
-				Console.WriteLine("▲▲▲OnLoginSuccess");
+				RaknetExtension.WriteInfo("▲▲▲OnLoginSuccess");
 			}
 
 			public override void OnWrongPassword(RakString usedPassword, UDPProxyServer proxyServerPlugin)
 			{
-				Console.WriteLine("▲▲▲OnWrongPassword");
+				RaknetExtension.WriteInfo("▲▲▲OnWrongPassword");
 			}
 
 			public override void OnAlreadyLoggedIn(RakString usedPassword, UDPProxyServer proxyServerPlugin)
 			{
-				Console.WriteLine("▲▲▲OnAlreadyLoggedIn");
+				RaknetExtension.WriteInfo("▲▲▲OnAlreadyLoggedIn");
 			}
 
 			public override void OnNoPasswordSet(RakString usedPassword, UDPProxyServer proxyServerPlugin)
 			{
-				Console.WriteLine("▲▲▲OnNoPasswordSet");
+				RaknetExtension.WriteInfo("▲▲▲OnNoPasswordSet");
 			}
 		}
 	}

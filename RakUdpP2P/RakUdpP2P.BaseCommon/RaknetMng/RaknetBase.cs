@@ -32,7 +32,20 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		public RaknetBase()
 		{
+			RaknetCSRunTest.JudgeRaknetCanRun();
+			rakPeer = RakPeerInterface.GetInstance();
+			EventRegister();
+		}
 
+		public RaknetAddress GetMyAddress()
+		{
+			SystemAddress systemAddress = rakPeer.GetMyBoundAddress();
+			return new RaknetAddress(systemAddress.ToString(false), systemAddress.GetPort());
+		}
+
+		public ulong GetMyRaknetGUID()
+		{
+			return rakPeer.GetMyGUID().g;
 		}
 
 		protected void EventRegister()

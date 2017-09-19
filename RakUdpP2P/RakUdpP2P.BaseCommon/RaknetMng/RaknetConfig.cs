@@ -10,6 +10,10 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 	{
 		public static string COORDINATOR_PASSWORD = "#$$#4745$%*(fghfg%^*&%^45";
 
-		public static RaknetAddress coordinatorAddress = new RaknetAddress("127.0.0.1", 50001);
+		public static RaknetAddress natServerAddress = new RaknetAddress("127.0.0.1", 50001);
+		public static RaknetAddress coordinatorAddress = new RaknetAddress("127.0.0.1", 50002);
+
+		public static string natServerPwd = "";
+		public static int natServerPwdLength = natServerPwd.Length;
 	}
 }

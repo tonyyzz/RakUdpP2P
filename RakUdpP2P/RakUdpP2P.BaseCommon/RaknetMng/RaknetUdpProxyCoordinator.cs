@@ -17,17 +17,13 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		public RaknetUdpProxyCoordinator()
 		{
-
+			udpProxyCoordinator = new UDPProxyCoordinator();
 		}
 
 		public bool Start(RaknetAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
-			RaknetCSRunTest.JudgeRaknetCanRun();
-			EventRegister();
-			rakPeer = RakPeerInterface.GetInstance();
-			udpProxyCoordinator = new UDPProxyCoordinator();
 			rakPeer.AttachPlugin(udpProxyCoordinator);
-			udpProxyCoordinator.SetRemoteLoginPassword(new RakString(RaknetConfig.COORDINATOR_PASSWORD));
+			udpProxyCoordinator.SetRemoteLoginPassword(RaknetConfig.COORDINATOR_PASSWORD);
 			rakPeer.SetMaximumIncomingConnections(maxConnCount);
 			SocketDescriptor socketDescriptor = new SocketDescriptor();
 			if (localAddress != null && !string.IsNullOrWhiteSpace(localAddress.Address) && localAddress.Port > 0)
@@ -53,13 +49,6 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			return false;
 		}
-
-		public RaknetAddress GetMyAddress()
-		{
-			SystemAddress systemAddress = rakPeer.GetMyBoundAddress();
-			return new RaknetAddress(systemAddress.ToString(false), systemAddress.GetPort());
-		}
-
 		
 		/// <summary>
 		/// 停止
