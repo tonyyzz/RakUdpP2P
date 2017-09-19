@@ -36,5 +36,13 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		{
 			return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 		}
+
+
+		public static void WriteWarning(string msg)
+		{
+			Console.ForegroundColor = ConsoleColor.Yellow;
+			Console.WriteLine(msg);
+			Console.ResetColor();
+		}
 	}
 }

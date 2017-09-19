@@ -8,9 +8,13 @@ using System.Threading.Tasks;
 
 namespace RakUdpP2P.BaseCommon.RaknetMng
 {
+	/// <summary>
+	/// Raknet UdpProxyCoordinator 
+	/// </summary>
 	public class RaknetUdpProxyCoordinator
 	{
 		public event Action<string, ushort> OnNewIncomingConnection;
+		public event Action<string, ushort> OnPortUsed;
 		public event Action<string, ushort, byte[]> OnReiceve;
 		public event Action<string, ushort> OnDisconnectionNotification;
 		public event Action<string, ushort> OnConnectionLost;
@@ -38,6 +42,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			rakPeer.AttachPlugin(udpProxyCoordinator);
 			udpProxyCoordinator.SetRemoteLoginPassword(new RakString(RaknetConfig.COORDINATOR_PASSWORD));
 
+			OnPortUsed += RaknetUdpProxyCoordinator_OnPortUsed;
 			OnNewIncomingConnection += RaknetUdpProxyCoordinator_OnNewIncomingConnection;
 			OnReiceve += RaknetUdpProxyCoordinator_OnReiceve;
 			OnDisconnectionNotification += RaknetUdpProxyCoordinator_OnDisconnectionNotification;
@@ -54,9 +59,9 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnUnconnectedPong += RaknetUdpProxyCoordinator_OnUnconnectedPong;
 			OnUdpProxyGeneral += RaknetUdpProxyCoordinator_OnUdpProxyGeneral;
 
-
 		}
 
+		private void RaknetUdpProxyCoordinator_OnPortUsed(string address, ushort port) { }
 		private void RaknetUdpProxyCoordinator_OnUdpProxyGeneral(string address, ushort port, byte typeByte) { }
 		private void RaknetUdpProxyCoordinator_OnUnconnectedPong(string address, ushort port) { }
 		private void RaknetUdpProxyCoordinator_OnUnconnectedPing(string address, ushort port) { }
@@ -86,9 +91,9 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			var startResult = rakPeer.Startup(maxConnCount, socketDescriptor, 1);
 			if (startResult == StartupResult.SOCKET_PORT_ALREADY_IN_USE)
 			{
-				Console.ForegroundColor = ConsoleColor.Yellow;
-				Console.WriteLine(string.Format(@"{0}端口被占用", socketDescriptor.port));
-				Console.ResetColor();
+				RaknetExtension.WriteWarning(string.Format(@"{0}端口被占用", socketDescriptor.port));
+				OnPortUsed(socketDescriptor.hostAddress, socketDescriptor.port);
+				return false;
 			}
 			List<int> startList = new List<int>()
 			{
