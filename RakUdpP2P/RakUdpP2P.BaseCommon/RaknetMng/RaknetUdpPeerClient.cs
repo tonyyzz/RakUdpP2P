@@ -13,8 +13,11 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		private NatPunchthroughClient natPunchthroughClient = null;
 		//private NatTypeDetectionClient natTypeDetectionClient = null;
 
+		private RaknetAddress _natServerAddress = null;
+
 		private RaknetAddress _peerServerAddress = null;
 		private ulong _udpPeerServerGuid = 0;
+
 		public RaknetUdpPeerClient()
 		{
 			natPunchthroughClient = new NatPunchthroughClient();
@@ -39,15 +42,16 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			return this;
 		}
 
-		public bool Connect(RaknetAddress peerServerAddress, ulong udpPeerServerGuid)
+		public bool Connect(RaknetAddress natServerAddress, RaknetAddress peerServerAddress, ulong udpPeerServerGuid)
 		{
+			_natServerAddress = natServerAddress;
 			_peerServerAddress = peerServerAddress;
 			_udpPeerServerGuid = udpPeerServerGuid;
-			var connectResult = rakPeer.Connect(RaknetConfig.natServerAddress.Address, RaknetConfig.natServerAddress.Port,
+			var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port,
 				RaknetConfig.natServerPwd, RaknetConfig.natServerPwdLength);
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)
 			{
-				//natTypeDetectionClient.DetectNATType(new SystemAddress(RaknetConfig.natServerAddress.Address, RaknetConfig.natServerAddress.Port));
+				//natTypeDetectionClient.DetectNATType(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port));
 				OnConnectionRequestAccepted += RaknetUdpPeerClient_OnConnectionRequestAccepted;
 				OnNatPunchthroughSucceeded += RaknetUdpPeerClient_OnNatPunchthroughSucceeded;
 				ReceiveThreadStart();
@@ -58,7 +62,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		private void RaknetUdpPeerClient_OnConnectionRequestAccepted(string address, ushort port)
 		{
-			if (address == RaknetConfig.natServerAddress.Address && port == RaknetConfig.natServerAddress.Port)
+			if (address == _natServerAddress.Address && port == _natServerAddress.Port)
 			{
 				//OpenNAT
 				RakNetGUID peerServerRakNetGUID = new RakNetGUID(_udpPeerServerGuid);
@@ -70,8 +74,10 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			else
 			{
-				//通过nat连接成功后，立即断开与natServer的连接
-				rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(RaknetConfig.natServerAddress.Address, RaknetConfig.natServerAddress.Port)), true);
+				//通过NAT与peerServer连接成功后，立即断开与natServer的连接
+				rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port)), true);
+
+				_peerServerAddress = new RaknetAddress(address, port);
 			}
 		}
 

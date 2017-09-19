@@ -61,7 +61,7 @@ namespace RakUdpP2P.UdpProxyConsole
 				);
 
 			RaknetUdpPeerClient raknetUdpPeerClient = new RaknetUdpPeerClient();
-			var udpPeerClientStarted = raknetUdpPeerClient.Start().Connect(raknetUdpPeerServer.GetMyAddress(), raknetUdpPeerServer.GetMyRaknetGUID());
+			var udpPeerClientStarted = raknetUdpPeerClient.Start().Connect(raknetUdpNATPTServer.GetMyAddress(), raknetUdpPeerServer.GetMyAddress(), raknetUdpPeerServer.GetMyRaknetGUID());
 			if (!udpPeerClientStarted)
 			{
 				Console.WriteLine("UdpPeerClient启动失败");
@@ -74,6 +74,6 @@ namespace RakUdpP2P.UdpProxyConsole
 			Console.ReadKey();
 		}
 
-		
+
 	}
 }

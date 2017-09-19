@@ -21,7 +21,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
             {
                 RakString dllCallTest = new RakString();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 string str = "DLL issue\nAdd SwigOutput/CplusDLLIncludes/RakNetWrap.cxx to the project\nDLL_Swig/RakNet.sln and rebuild.\nPress enter to quit.";
                 throw new Exception(str);

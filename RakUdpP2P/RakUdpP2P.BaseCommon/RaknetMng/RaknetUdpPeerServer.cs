@@ -42,11 +42,11 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		{
 			_natServerAddress = natServerAddress;
 			ReceiveThreadStart();
-			var connectResult = rakPeer.Connect(RaknetConfig.natServerAddress.Address, RaknetConfig.natServerAddress.Port,
+			var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port,
 				RaknetConfig.natServerPwd, RaknetConfig.natServerPwdLength);
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)//尝试连接开始
 			{
-				//natTypeDetectionClient.DetectNATType(new SystemAddress(RaknetConfig.natServerAddress.Address, RaknetConfig.natServerAddress.Port));
+				//natTypeDetectionClient.DetectNATType(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port));
 
 				//未完。。。，还要连接coordinator，走Proxy流程
 
