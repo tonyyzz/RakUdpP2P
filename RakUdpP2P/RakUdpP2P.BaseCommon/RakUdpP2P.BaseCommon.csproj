@@ -42,7 +42,9 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RaknetMng\RaknetAddress.cs" />
+    <Compile Include="RaknetMng\RaknetBase.cs" />
     <Compile Include="RaknetMng\RaknetConfig.cs" />
+    <Compile Include="RaknetMng\RaknetCSRunTest.cs" />
     <Compile Include="RaknetMng\RaknetExtension.cs" />
     <Compile Include="RaknetMng\RaknetUdpNATPTServer.cs" />
     <Compile Include="RaknetMng\RaknetUdpPeerClient.cs" />
