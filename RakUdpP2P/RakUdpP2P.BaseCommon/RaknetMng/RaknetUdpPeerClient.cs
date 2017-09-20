@@ -60,10 +60,16 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnDisconnectionNotification += RaknetUdpPeerClient_OnDisconnectionNotification;
 			OnConnectionLost += RaknetUdpPeerClient_OnConnectionLost;
 			ReceiveThreadStart();
+
+			//*************************************************************************************************************
+
 			//启动NATPunchthrough连接
-			//var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
+			var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
 			//（测试）穿透失败后转代理，但要先连接协调器（在此测试，直接以代理的方式通讯，而不通过NAT穿透，测试完后，要记得换成上面一行代码）
-			var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+			//var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+
+			//*************************************************************************************************************
+
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)
 			{
 				//natTypeDetectionClient.DetectNATType(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port));
@@ -145,6 +151,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 						{
 							break;
 						}
+						Console.WriteLine("dddddddd");
 						//循环发送消息以保持连接
 						var tempByte = new byte[] { (byte)DefaultMessageIDTypes.ID_USER_PACKET_ENUM };
 						rakPeer.Send(tempByte, tempByte.Length,
