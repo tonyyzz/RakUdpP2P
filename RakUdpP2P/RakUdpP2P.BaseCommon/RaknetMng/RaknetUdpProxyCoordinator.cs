@@ -37,6 +37,8 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 				RaknetExtension.WriteWarning(string.Format(@"{0}端口被占用", socketDescriptor.port));
 				return false;
 			}
+			OnUdpProxyGeneral += RaknetUdpProxyCoordinator_OnUdpProxyGeneral;
+			ReceiveThreadStart();
 			List<int> startList = new List<int>()
 			{
 				(int)StartupResult.RAKNET_STARTED,
@@ -44,10 +46,9 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			};
 			if (startList.Any(m => m == (int)startResult))
 			{
-				ReceiveThreadStart();
-				OnUdpProxyGeneral += RaknetUdpProxyCoordinator_OnUdpProxyGeneral;
 				return true;
 			}
+			isThreadRunning = false;
 			return false;
 		}
 

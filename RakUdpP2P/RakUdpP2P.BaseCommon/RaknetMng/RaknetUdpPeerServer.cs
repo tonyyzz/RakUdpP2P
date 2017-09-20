@@ -109,6 +109,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			beforeAction?.Invoke();
 			string myAddress = GetMyAddress().ToString();
 			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port)), true);
+			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_coordinatorAddress.Address, _coordinatorAddress.Port)), true);
 			isThreadRunning = false;
 			rakPeer.Shutdown(10);
 			RakPeerInterface.DestroyInstance(rakPeer);

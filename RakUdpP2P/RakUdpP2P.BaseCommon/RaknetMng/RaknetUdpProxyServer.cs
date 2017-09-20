@@ -42,11 +42,11 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		public bool Connect(RaknetAddress coordinatorAddress)
 		{
 			_coordinatorAddress = coordinatorAddress;
+			OnConnectionRequestAccepted += RaknetUdpProxyServer_OnConnectionRequestAccepted;
 			ReceiveThreadStart();
 			var connectResult = rakPeer.Connect(coordinatorAddress.Address, coordinatorAddress.Port, "", 0);
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED) //尝试连接开始
 			{
-				OnConnectionRequestAccepted += RaknetUdpProxyServer_OnConnectionRequestAccepted;
 				return true;
 			}
 			isThreadRunning = false;

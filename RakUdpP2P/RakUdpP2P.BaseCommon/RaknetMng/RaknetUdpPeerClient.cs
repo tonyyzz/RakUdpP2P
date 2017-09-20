@@ -54,21 +54,22 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			_coordinatorAddress = coordinatorAddress;
 			_peerServerAddress = peerServerAddress;
 			_udpPeerServerGuid = udpPeerServerGuid;
+			OnConnectionRequestAccepted += RaknetUdpPeerClient_OnConnectionRequestAccepted;
+			OnNatPunchthroughSucceeded += RaknetUdpPeerClient_OnNatPunchthroughSucceeded;
+			OnNatPunchthroughFailed += RaknetUdpPeerClient_OnNatPunchthroughFailed;
+			OnDisconnectionNotification += RaknetUdpPeerClient_OnDisconnectionNotification;
+			OnConnectionLost += RaknetUdpPeerClient_OnConnectionLost;
+			ReceiveThreadStart();
 			//启动NATPunchthrough连接
-			var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
+			//var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
 			//（测试）穿透失败后转代理，但要先连接协调器（在此测试，直接以代理的方式通讯，而不通过NAT穿透，测试完后，要记得换成上面一行代码）
-			//var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+			var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)
 			{
 				//natTypeDetectionClient.DetectNATType(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port));
-				OnConnectionRequestAccepted += RaknetUdpPeerClient_OnConnectionRequestAccepted;
-				OnNatPunchthroughSucceeded += RaknetUdpPeerClient_OnNatPunchthroughSucceeded;
-				OnNatPunchthroughFailed += RaknetUdpPeerClient_OnNatPunchthroughFailed;
-				OnDisconnectionNotification += RaknetUdpPeerClient_OnDisconnectionNotification;
-				OnConnectionLost += RaknetUdpPeerClient_OnConnectionLost;
-				ReceiveThreadStart();
 				return true;
 			}
+			isThreadRunning = false;
 			return false;
 		}
 
@@ -126,7 +127,6 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 				coordinatorAddress.SetPortHostOrder(_coordinatorAddress.Port);
 				//请求代理转发消息
 				udpProxyClient.RequestForwarding(coordinatorAddress, rakPeer.GetMyBoundAddress(), new SystemAddress(_peerServerAddress.Address, _peerServerAddress.Port), 7000);
-
 			}
 			else if (_proxyServerAddress != null && address == _proxyServerAddress.Address && port == _proxyServerAddress.Port)
 			{
@@ -226,6 +226,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			beforeAction?.Invoke();
 			string myAddress = GetMyAddress().ToString();
 			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port)), true);
+			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_coordinatorAddress.Address, _coordinatorAddress.Port)), true);
 			isThreadRunning = false;
 			rakPeer.Shutdown(10);
 			RakPeerInterface.DestroyInstance(rakPeer);
