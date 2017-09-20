@@ -52,9 +52,10 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			_coordinatorAddress = coordinatorAddress;
 			_peerServerAddress = peerServerAddress;
 			_udpPeerServerGuid = udpPeerServerGuid;
-			//var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
-			//穿透失败后转代理，但要先连接协调器（在此测试，直接连接代理）
-			var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+			//先启动NATPunchthrough连接
+			var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
+			//（测试）穿透失败后转代理，但要先连接协调器（在此测试，直接连接代理）
+			//var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)
 			{
 				//natTypeDetectionClient.DetectNATType(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port));
