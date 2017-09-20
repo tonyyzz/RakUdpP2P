@@ -54,9 +54,9 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			_coordinatorAddress = coordinatorAddress;
 			_peerServerAddress = peerServerAddress;
 			_udpPeerServerGuid = udpPeerServerGuid;
-			//先启动NATPunchthrough连接
+			//启动NATPunchthrough连接
 			var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
-			//（测试）穿透失败后转代理，但要先连接协调器（在此测试，直接连接代理）
+			//（测试）穿透失败后转代理，但要先连接协调器（在此测试，直接以代理的方式通讯，而不通过NAT穿透，测试完后，要记得换成上面一行代码）
 			//var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)
 			{
