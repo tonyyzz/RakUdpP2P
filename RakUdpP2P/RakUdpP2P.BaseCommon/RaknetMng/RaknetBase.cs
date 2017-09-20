@@ -153,18 +153,6 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 									OnIncompatibleProtocolVersion(peerAddress, peerPort);
 								}
 								break;
-							case DefaultMessageIDTypes.ID_NAT_PUNCHTHROUGH_SUCCEEDED: //67-客户端NAT穿透成功
-								{
-									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "客户端NAT穿透成功 [OnNatPunchthroughSucceeded]");
-									OnNatPunchthroughSucceeded(peerAddress, peerPort);
-								}
-								break;
-							case DefaultMessageIDTypes.ID_NAT_PUNCHTHROUGH_FAILED: //66-客户端NAT穿透失败
-								{
-									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "客户端NAT穿透失败 [OnNatPunchthroughFailed]");
-									OnNatPunchthroughFailed(peerAddress, peerPort);
-								}
-								break;
 							case DefaultMessageIDTypes.ID_NAT_TARGET_NOT_CONNECTED: //62-客户端：客户端NAT穿透失败
 							case DefaultMessageIDTypes.ID_NAT_TARGET_UNRESPONSIVE: //63-客户端：客户端NAT穿透失败
 							case DefaultMessageIDTypes.ID_NAT_CONNECTION_TO_TARGET_LOST: //64-客户端：客户端NAT穿透失败
@@ -174,10 +162,16 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 									OnConnectionAttemptFailedCommon(peerAddress, peerPort);
 								}
 								break;
-							case DefaultMessageIDTypes.ID_NO_FREE_INCOMING_CONNECTIONS: //20-没有可用的连接，服务器已经达到最大连接数
+							case DefaultMessageIDTypes.ID_NAT_PUNCHTHROUGH_FAILED: //66-客户端NAT穿透失败
 								{
-									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "没有可用的连接，服务器已经达到最大连接数 [OnNoFreeIncomingConnections]");
-									OnNoFreeIncomingConnections(peerAddress, peerPort);
+									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "客户端NAT穿透失败 [OnNatPunchthroughFailed]");
+									OnNatPunchthroughFailed(peerAddress, peerPort);
+								}
+								break;
+							case DefaultMessageIDTypes.ID_NAT_PUNCHTHROUGH_SUCCEEDED: //67-客户端NAT穿透成功
+								{
+									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "客户端NAT穿透成功 [OnNatPunchthroughSucceeded]");
+									OnNatPunchthroughSucceeded(peerAddress, peerPort);
 								}
 								break;
 							case DefaultMessageIDTypes.ID_CONNECTION_REQUEST_ACCEPTED: //16-客户端：连接请求被接受
@@ -198,10 +192,10 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 									OnNewIncomingConnection(peerAddress, peerPort);
 								}
 								break;
-							case DefaultMessageIDTypes.ID_USER_PACKET_ENUM: //134-接收消息
+							case DefaultMessageIDTypes.ID_NO_FREE_INCOMING_CONNECTIONS: //20-没有可用的连接，服务器已经达到最大连接数
 								{
-									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "接收消息 [OnReiceve]");
-									OnReiceve(peerAddress, peerPort, testPacket.data.Skip(1).ToArray());
+									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "没有可用的连接，服务器已经达到最大连接数 [OnNoFreeIncomingConnections]");
+									OnNoFreeIncomingConnections(peerAddress, peerPort);
 								}
 								break;
 							case DefaultMessageIDTypes.ID_DISCONNECTION_NOTIFICATION: //21-客户端主动断开连接的通知
@@ -216,9 +210,18 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 									OnConnectionLost(peerAddress, peerPort);
 								}
 								break;
+							case DefaultMessageIDTypes.ID_USER_PACKET_ENUM: //134-接收消息
+								{
+									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "接收消息 [OnReiceve]");
+									if (testPacket.data.Count() >= 2) //过滤掉通过proxy发送过来的用来保持连接的消息
+									{
+										OnReiceve(peerAddress, peerPort, testPacket.data.Skip(1).ToArray());
+									}
+								}
+								break;
 							default: //消息标志异常，如果有需要，再另加case处理
 								{
-									defaultMessageIDType.WriteMsgTypeError("消息标志异常");
+									defaultMessageIDType.WriteMsgTypeError(string.Format(@"[{0}:{1}] [{2}:{3}] 消息标志异常", rakPeer.GetMyBoundAddress().ToString(false), rakPeer.GetMyBoundAddress().GetPort(), peerAddress, peerPort));
 								}
 								break;
 						}

@@ -11,7 +11,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 	/// <summary>
 	/// Raknet UdpProxyCoordinator 
 	/// </summary>
-	public class RaknetUdpProxyCoordinator: RaknetBase
+	public class RaknetUdpProxyCoordinator : RaknetBase
 	{
 		private UDPProxyCoordinator udpProxyCoordinator = null;
 
@@ -45,11 +45,17 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			if (startList.Any(m => m == (int)startResult))
 			{
 				ReceiveThreadStart();
+				OnUdpProxyGeneral += RaknetUdpProxyCoordinator_OnUdpProxyGeneral;
 				return true;
 			}
 			return false;
 		}
-		
+
+		private void RaknetUdpProxyCoordinator_OnUdpProxyGeneral(string address, ushort port, byte theByte)
+		{
+			RaknetExtension.WriteInfo(string.Format(@"ID_UDP_PROXY_GENERAL类型：{0}", theByte));
+		}
+
 		/// <summary>
 		/// 停止
 		/// </summary>

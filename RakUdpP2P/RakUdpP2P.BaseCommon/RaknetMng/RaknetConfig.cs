@@ -14,6 +14,5 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		public static RaknetAddress coordinatorAddress = new RaknetAddress("127.0.0.1", 50002);
 
 		public static string natServerPwd = "";
-		public static int natServerPwdLength = natServerPwd.Length;
 	}
 }

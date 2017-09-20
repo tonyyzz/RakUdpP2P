@@ -33,7 +33,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			var startResult = rakPeer.Startup(maxConnCount, socketDescriptor, 1);
 			if (startResult == StartupResult.SOCKET_PORT_ALREADY_IN_USE)
 			{
-				RaknetExtension.WriteWarning(string.Format(@"{0}端口被占用", socketDescriptor.port));
+				RaknetExtension.WriteWarning(string.Format(@"proxyServer {0}端口被占用", socketDescriptor.port));
 				return this;
 			}
 			return this;
