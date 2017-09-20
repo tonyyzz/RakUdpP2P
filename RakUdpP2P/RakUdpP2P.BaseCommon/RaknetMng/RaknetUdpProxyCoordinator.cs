@@ -67,7 +67,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			isThreadRunning = false;
 			rakPeer.Shutdown(10);
 			RakPeerInterface.DestroyInstance(rakPeer);
-			Console.WriteLine("coordinator停止了：{0}", myAddress);
+			RaknetExtension.WriteWarning(string.Format("coordinator停止了：{0}", myAddress));
 		}
 	}
 }

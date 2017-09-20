@@ -213,7 +213,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 							case DefaultMessageIDTypes.ID_USER_PACKET_ENUM: //134-接收消息
 								{
 									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "接收消息 [OnReiceve]");
-									if (testPacket.data.Count() >= 2) //过滤掉通过proxy发送过来的用来保持连接的消息
+									if (testPacket.data.Count() > 1) //过滤掉通过proxy发送过来的用来保持连接的消息
 									{
 										OnReiceve(peerAddress, peerPort, testPacket.data.Skip(1).ToArray());
 									}

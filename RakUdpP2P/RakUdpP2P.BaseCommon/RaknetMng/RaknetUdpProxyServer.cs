@@ -53,21 +53,6 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			return false;
 		}
 
-		// <summary>
-		/// 停止
-		/// </summary>
-		/// <param name="beforeAction"></param>
-		public void Stop(Action beforeAction = null)
-		{
-			beforeAction?.Invoke();
-			string myAddress = GetMyAddress().ToString();
-			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_coordinatorAddress.Address, _coordinatorAddress.Port)), true);
-			isThreadRunning = false;
-			rakPeer.Shutdown(10);
-			RakPeerInterface.DestroyInstance(rakPeer);
-			Console.WriteLine("UdpProxyServer停止了：{0}", myAddress);
-		}
-
 		private void RaknetUdpProxyServer_OnConnectionRequestAccepted(string address, ushort port)
 		{
 			//登录coordinator
@@ -95,6 +80,21 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			{
 				RaknetExtension.WriteInfo("▲▲▲OnNoPasswordSet");
 			}
+		}
+
+		// <summary>
+		/// 停止
+		/// </summary>
+		/// <param name="beforeAction"></param>
+		public void Stop(Action beforeAction = null)
+		{
+			beforeAction?.Invoke();
+			string myAddress = GetMyAddress().ToString();
+			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_coordinatorAddress.Address, _coordinatorAddress.Port)), true);
+			isThreadRunning = false;
+			rakPeer.Shutdown(10);
+			RakPeerInterface.DestroyInstance(rakPeer);
+			RaknetExtension.WriteWarning(string.Format("UdpProxyServer停止了：{0}", myAddress));
 		}
 	}
 }
