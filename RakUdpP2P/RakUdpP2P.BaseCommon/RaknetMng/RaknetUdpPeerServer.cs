@@ -10,15 +10,15 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 	public class RaknetUdpPeerServer : RaknetBase
 	{
 		/// <summary>
-		/// 有新的PeerClient连接进来
+		/// 有新的PeerClient连接进来的事件通知
 		/// </summary>
 		public event Action<string, ushort, RaknetUdpPeerServer> OnConnect;
 		/// <summary>
-		/// 收到PeerClient的消息
+		/// 收到PeerClient的消息事件通知
 		/// </summary>
 		public event Action<string, ushort, byte[], RaknetUdpPeerServer> OnReceive;
 		/// <summary>
-		/// 有PeerClient断开与PeerServer的连接
+		/// 有PeerClient断开与PeerServer的连接事件通知
 		/// </summary>
 		public event Action<string, ushort, RaknetUdpPeerServer> OnDisConnect;
 
