@@ -52,6 +52,7 @@ namespace RakUdpP2P.UdpProxyConsole
 				raknetUdpPeerServer.GetMyGuid()
 				);
 			raknetUdpPeerServer.OnConnect += RaknetUdpPeerServer_OnConnect;
+			raknetUdpPeerServer.OnConnectFailed += RaknetUdpPeerServer_OnConnectFailed;
 			raknetUdpPeerServer.OnReceive += RaknetUdpPeerServer_OnReceive;
 
 			//start PeerClient
@@ -65,8 +66,11 @@ namespace RakUdpP2P.UdpProxyConsole
 			}
 			Console.WriteLine("UdpPeerClient启动成功，IP地址为：{0}", raknetUdpPeerClient.GetMyIpAddress().ToString());
 			raknetUdpPeerClient.OnConnect += RaknetUdpPeerClient_OnConnect;
+			raknetUdpPeerClient.OnConnectFailed += RaknetUdpPeerClient_OnConnectFailed;
 			raknetUdpPeerClient.OnReceive += RaknetUdpPeerClient_OnReceive;
 		}
+
+
 
 		private static void RaknetUdpPeerClient_OnConnect(string address, ushort port, RaknetUdpPeerClient raknetUdpPeerClient)
 		{
@@ -75,6 +79,10 @@ namespace RakUdpP2P.UdpProxyConsole
 			Console.WriteLine("PeerClient给PeerServer发送消息");
 			byte[] data = Encoding.UTF8.GetBytes("这是从Client发送的测试数据");
 			raknetUdpPeerClient.Send(data);
+		}
+		private void RaknetUdpPeerClient_OnConnectFailed(string address, ushort port, RaknetUdpPeerClient raknetUdpPeerClient)
+		{
+			Console.WriteLine("PeerClient尝试连接【{0}:{1}】失败", address, port);
 		}
 		private static void RaknetUdpPeerClient_OnReceive(string address, ushort port, byte[] bytes, RaknetUdpPeerClient raknetUdpPeerClient)
 		{
@@ -89,6 +97,11 @@ namespace RakUdpP2P.UdpProxyConsole
 			//step 1.2
 			Console.WriteLine("PeerServer中的连接个数：{0}，最新连接进来的IPAddress为：{1}:{2}",
 				raknetUdpPeerServer.GetConnectionCount(), address, port);
+		}
+
+		private void RaknetUdpPeerServer_OnConnectFailed(string address, ushort port, RaknetUdpPeerServer raknetUdpPeerServer)
+		{
+			Console.WriteLine("PeerServer尝试连接【{0}:{1}】失败", address, port);
 		}
 
 		private static void RaknetUdpPeerServer_OnReceive(string address, ushort port, byte[] bytes, RaknetUdpPeerServer raknetUdpPeerServer)

@@ -43,6 +43,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		{
 			_coordinatorAddress = coordinatorAddress;
 			OnConnectionRequestAccepted += RaknetUdpProxyServer_OnConnectionRequestAccepted;
+			OnConnectionAttemptFailed += RaknetUdpProxyServer_OnConnectionAttemptFailed;
 			ReceiveThreadStart();
 			var connectResult = rakPeer.Connect(coordinatorAddress.Address, coordinatorAddress.Port, "", 0);
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED) //尝试连接开始
@@ -51,6 +52,12 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			isThreadRunning = false;
 			return false;
+		}
+
+		private void RaknetUdpProxyServer_OnConnectionAttemptFailed(string address, ushort port)
+		{
+			//连接失败
+			isThreadRunning = false;
 		}
 
 		internal RaknetIPAddress GetMyIpAddress()
