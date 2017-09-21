@@ -85,28 +85,60 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnDisconnectionNotification += RaknetUdpPeerClient_OnDisconnectionNotification;
 			OnConnectionLost += RaknetUdpPeerClient_OnConnectionLost;
 			OnRaknetReceive += RaknetUdpPeerClient_OnRaknetReceive;
+			OnUnconnectedPong += RaknetUdpPeerClient_OnUnconnectedPong;
 			ReceiveThreadStart();
 
 			//*************************************************************************************************************
 			//*******************************************  【---注意！---】  ***********************************************
 			//*************************************************************************************************************
 
-			//启动NATPunchthrough连接
-			var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
-			//（测试）穿透失败后转代理，但要先连接协调器（在此测试，直接以代理的方式通讯，而不通过NAT穿透，测试完后，要记得换成上面一行代码）
-			//var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+			////启动NATPunchthrough连接
+			//var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
+			////（测试）穿透失败后转代理，但要先连接协调器（在此测试，直接以代理的方式通讯，而不通过NAT穿透，测试完后，要记得换成上面一行代码）
+			////var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+			//if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)
+			//{
+			//	//natTypeDetectionClient.DetectNATType(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port));
+			//	return true;
+			//}
+
+
+			//改进：先ping
+			var pingFlag = rakPeer.Ping(_natServerAddress.Address, _natServerAddress.Port, true);
+			//var pingFlag = rakPeer.Ping(_coordinatorAddress.Address, _coordinatorAddress.Port, true);
+			if (pingFlag)
+			{
+				return true;
+			}
+
 
 			//*************************************************************************************************************
 			//*******************************************  【---注意！---】  ***********************************************
 			//*************************************************************************************************************
 
-			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)
-			{
-				//natTypeDetectionClient.DetectNATType(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port));
-				return true;
-			}
+
 			isThreadRunning = false;
 			return false;
+		}
+
+		private void RaknetUdpPeerClient_OnUnconnectedPong(string address, ushort port)
+		{
+			//先ping通后再连接
+			if (address == _natServerAddress.Address && port == _natServerAddress.Port)
+			{
+				//连接natServer
+				rakPeer.Connect(_natServerAddress.Address, (ushort)(_natServerAddress.Port-10), RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
+			}
+			else if (address == _coordinatorAddress.Address && port == _coordinatorAddress.Port)
+			{
+				//连接coordinator
+				rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+			}
+			else
+			{
+				//连接peerServer
+				rakPeer.Connect(_peerServerAddress.Address, _peerServerAddress.Port, "", 0);
+			}
 		}
 
 		private void RaknetUdpPeerClient_OnRaknetReceive(string address, ushort port, byte[] bytes)
@@ -154,6 +186,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 				(char)0,
 				new AddressOrGUID(new SystemAddress(_peerServerAddress.Address, _peerServerAddress.Port)),
 				false);
+			//var flag = rakPeer.Ping(_natServerAddress.Address, _natServerAddress.Port, true);
 		}
 
 		private void RaknetUdpPeerClient_OnDisconnectionNotification(string address, ushort port)
@@ -275,12 +308,20 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		private void RaknetUdpPeerClient_OnNatPunchthroughSucceeded(string arg1, ushort arg2)
 		{
 			//穿透成功后连接peerServer
-			rakPeer.Connect(_peerServerAddress.Address, _peerServerAddress.Port, "", 0);
+			//rakPeer.Connect(_peerServerAddress.Address, _peerServerAddress.Port, "", 0);
+
+			//穿透成功后连接peerServer，改进：先ping
+			//rakPeer.Connect(_peerServerAddress.Address, _peerServerAddress.Port, "", 0);
+			rakPeer.Ping(_peerServerAddress.Address, _peerServerAddress.Port, true);
 		}
 		private void RaknetUdpPeerClient_OnNatPunchthroughFailed(string address, ushort port)
 		{
-			//穿透失败后转代理，但要先连接协调器
-			rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+			////穿透失败后转代理，但要先连接协调器
+			//rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+
+			//穿透失败后转代理，但要先连接协调器，改进：先ping
+			//rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+			rakPeer.Ping(_coordinatorAddress.Address, _coordinatorAddress.Port, true);
 		}
 
 		private class MyUDPProxyClientResultHandler : UDPProxyClientResultHandler

@@ -24,6 +24,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		protected event Action<string, ushort> OnFcm2NewHost;
 		protected event Action<string, ushort, byte> OnNatTypeDetectionRequest;
 		protected event Action<string, ushort> OnUnconnectedPing;
+		protected event Action<string, ushort> OnUnconnectedPingOpenConnections;
 		protected event Action<string, ushort> OnUnconnectedPong;
 		protected event Action<string, ushort, byte> OnUdpProxyGeneral;
 
@@ -64,10 +65,12 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnFcm2NewHost += Method_OnFcm2NewHost;
 			OnNatTypeDetectionRequest += Method_OnNatTypeDetectionRequest;
 			OnUnconnectedPing += Method_OnUnconnectedPing;
+			OnUnconnectedPingOpenConnections += RaknetBase_OnUnconnectedPingOpenConnections;
 			OnUnconnectedPong += Method_OnUnconnectedPong;
 			OnUdpProxyGeneral += Method_OnUdpProxyGeneral;
 		}
 
+		private void RaknetBase_OnUnconnectedPingOpenConnections(string address, ushort port) { }
 		private void Method_OnConnectionRequestAccepted(string address, ushort port) { }
 		private void Method_OnPortUsed(string address, ushort port) { }
 		private void Method_OnUdpProxyGeneral(string address, ushort port, byte typeByte) { }
@@ -127,6 +130,12 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 							{
 								defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, " [OnUnconnectedPing]");
 								OnUnconnectedPing(peerAddress, peerPort);
+							}
+							break;
+						case DefaultMessageIDTypes.ID_UNCONNECTED_PING_OPEN_CONNECTIONS: //2
+							{
+								defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, " [OnUnconnectedPingOpenConnections]");
+								OnUnconnectedPingOpenConnections(peerAddress, peerPort);
 							}
 							break;
 						case DefaultMessageIDTypes.ID_UNCONNECTED_PONG: //28
