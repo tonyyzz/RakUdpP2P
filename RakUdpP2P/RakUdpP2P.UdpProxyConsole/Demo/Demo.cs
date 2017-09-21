@@ -84,8 +84,8 @@ namespace RakUdpP2P.UdpProxyConsole
 		{
 			Console.WriteLine("PeerClient尝试连接【{0}:{1}】失败", address, port);//address和port则表示尝试连接但失败的ip地址和端口
 
-			//接下来的思路：如果连接失败，则直接遍历剩下的还未尝试连接的Nat服务器和proxy服务器重连，如果所有的都尝试连接失败，则表示失败
-			//客户端自行实现...（请事先获取所有可以连接的Nat服务器和Proxy服务器的IPAddress）
+			//PeerClient端
+			//如果尝试连接失败，那就是失败，不另作处理
 
 		}
 		private static void RaknetUdpPeerClient_OnReceive(string address, ushort port, byte[] bytes, RaknetUdpPeerClient raknetUdpPeerClient)
@@ -107,8 +107,10 @@ namespace RakUdpP2P.UdpProxyConsole
 		{
 			Console.WriteLine("PeerServer尝试连接【{0}:{1}】失败", address, port);//address和port则表示尝试连接但失败的ip地址和端口
 
+			//PeerServer端
 			//接下来的思路：如果连接失败，则直接遍历剩下的还未尝试连接的Nat服务器和proxy服务器重连，如果所有的都尝试连接失败，则表示失败
-			//客户端自行实现...（请事先获取所有可以连接的Nat服务器和Proxy服务器的IPAddress）
+			//（请事先获取所有可以连接的Nat服务器和Proxy服务器的IPAddress，优先遍历所有的NatServer，因为Nat成功率高，而proxy只是作为备选方案）
+			//客户端自行实现...
 
 		}
 
