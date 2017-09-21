@@ -49,6 +49,7 @@
     <Compile Include="RaknetMng\RaknetUdpNATPTServer.cs" />
     <Compile Include="RaknetMng\RaknetUdpPeerClient.cs" />
     <Compile Include="RaknetMng\RaknetUdpPeerServer.cs" />
+    <Compile Include="RaknetMng\RaknetUdpProxy.cs" />
     <Compile Include="RaknetMng\RaknetUdpProxyCoordinator.cs" />
     <Compile Include="RaknetMng\RaknetUdpProxyServer.cs" />
   </ItemGroup>
