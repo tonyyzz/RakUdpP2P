@@ -7,7 +7,7 @@ namespace RakUdpP2P.UdpProxyConsole
 		static void Main(string[] args)
 		{
 
-			new Demo().Do();
+			new NatServerCrowdTest().Do();
 
 			Console.ReadKey();
 		}
