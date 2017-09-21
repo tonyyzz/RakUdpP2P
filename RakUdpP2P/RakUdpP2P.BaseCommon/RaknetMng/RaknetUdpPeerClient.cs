@@ -324,6 +324,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		public void Stop(Action beforeAction = null)
 		{
 			beforeAction?.Invoke();
+			isProxyMsgSending = false;//（内部用）
 			_isConnectPeerServer = false;
 			string myAddress = GetMyAddress().ToString();
 			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port)), true);
