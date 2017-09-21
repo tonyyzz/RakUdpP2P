@@ -16,26 +16,39 @@ namespace RakUdpP2P.UdpProxyConsole
 		static void Main(string[] args)
 		{
 			#region udpProxy
-			RaknetUdpProxyCoordinator raknetUdpProxyCoordinator = new RaknetUdpProxyCoordinator();
-			var proxyCoordinatorStarted = raknetUdpProxyCoordinator.Start(RaknetConfig.coordinatorAddress);
-			if (!proxyCoordinatorStarted)
-			{
-				Console.WriteLine("Coordinator启动失败");
-				Console.ReadKey();
-				return;
-			}
-			Console.WriteLine("Coordinator启动成功，IP地址为：{0}", raknetUdpProxyCoordinator.GetMyIpAddress().ToString());
+			//RaknetUdpProxyCoordinator raknetUdpProxyCoordinator = new RaknetUdpProxyCoordinator();
+			//var proxyCoordinatorStarted = raknetUdpProxyCoordinator.Start(RaknetConfig.coordinatorAddress);
+			//if (!proxyCoordinatorStarted)
+			//{
+			//	Console.WriteLine("Coordinator启动失败");
+			//	Console.ReadKey();
+			//	return;
+			//}
+			//Console.WriteLine("Coordinator启动成功，IP地址为：{0}", raknetUdpProxyCoordinator.GetMyIpAddress().ToString());
 
-			RaknetUdpProxyServer raknetUdpProxyServer = new RaknetUdpProxyServer();
-			var proxyServerStarted = raknetUdpProxyServer.Start().Connect(raknetUdpProxyCoordinator.GetMyIpAddress());
-			if (!proxyServerStarted)
+			//RaknetUdpProxyServer raknetUdpProxyServer = new RaknetUdpProxyServer();
+			//var proxyServerStarted = raknetUdpProxyServer.Start().Connect(raknetUdpProxyCoordinator.GetMyIpAddress());
+			//if (!proxyServerStarted)
+			//{
+			//	Console.WriteLine("ProxyServer启动失败");
+			//	Console.ReadKey();
+			//	return;
+			//}
+			//Console.WriteLine("ProxyServer启动成功，IP地址为：{0}", raknetUdpProxyServer.GetMyIpAddress().ToString());
+
+			RaknetUdpProxy raknetUdpProxy = new RaknetUdpProxy();
+			var proxyStarted = raknetUdpProxy.Start(RaknetConfig.proxyAddress);
+			if (!proxyStarted)
 			{
-				Console.WriteLine("ProxyServer启动失败");
+				Console.WriteLine("Proxy启动失败");
 				Console.ReadKey();
 				return;
 			}
-			Console.WriteLine("ProxyServer启动成功，IP地址为：{0}", raknetUdpProxyServer.GetMyIpAddress().ToString());
+			Console.WriteLine("Proxy启动成功，IP地址为：{0}", raknetUdpProxy.GetMyIpAddress().ToString());
+
 			#endregion
+
+
 
 			RaknetUdpNATPTServer raknetUdpNATPTServer = new RaknetUdpNATPTServer();
 			var udpNATPTServerStarted = raknetUdpNATPTServer.Start(RaknetConfig.natServerAddress);
@@ -49,7 +62,7 @@ namespace RakUdpP2P.UdpProxyConsole
 
 			//PeerServer
 			//RaknetUdpPeerServer raknetUdpPeerServer = new RaknetUdpPeerServer();
-			var udpPeerServerStarted = raknetUdpPeerServer.Start().Connect(raknetUdpNATPTServer.GetMyIpAddress(), raknetUdpProxyCoordinator.GetMyIpAddress());
+			var udpPeerServerStarted = raknetUdpPeerServer.Start().Connect(raknetUdpNATPTServer.GetMyIpAddress(), raknetUdpProxy.GetMyIpAddress());
 			if (!udpPeerServerStarted)
 			{
 				Console.WriteLine("UdpPeerServer启动失败");
@@ -65,7 +78,7 @@ namespace RakUdpP2P.UdpProxyConsole
 
 			//PeerClient
 			//RaknetUdpPeerClient raknetUdpPeerClient = new RaknetUdpPeerClient();
-			var udpPeerClientStarted = raknetUdpPeerClient.Start().Connect(raknetUdpNATPTServer.GetMyIpAddress(), raknetUdpProxyCoordinator.GetMyIpAddress(), raknetUdpPeerServer.GetMyIpAddress(), raknetUdpPeerServer.GetMyGuid());
+			var udpPeerClientStarted = raknetUdpPeerClient.Start().Connect(raknetUdpNATPTServer.GetMyIpAddress(), raknetUdpProxy.GetMyIpAddress(), raknetUdpPeerServer.GetMyIpAddress(), raknetUdpPeerServer.GetMyGuid());
 			if (!udpPeerClientStarted)
 			{
 				Console.WriteLine("UdpPeerClient启动失败");
@@ -79,6 +92,11 @@ namespace RakUdpP2P.UdpProxyConsole
 
 			Console.ReadKey();
 		}
+
+
+
+
+
 
 
 		private static void RaknetUdpPeerClient_OnConnect(string address, ushort port)

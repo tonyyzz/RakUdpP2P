@@ -11,17 +11,36 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 	/// </summary>
 	public class RaknetUdpProxy
 	{
+		private RaknetUdpProxyCoordinator raknetUdpProxyCoordinator = null;
+		private RaknetUdpProxyServer raknetUdpProxyServer = null;
 		public RaknetUdpProxy()
 		{
-
+			raknetUdpProxyCoordinator = new RaknetUdpProxyCoordinator();
+			raknetUdpProxyServer = new RaknetUdpProxyServer();
 		}
-		public void Start()
+		public bool Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
-
+			var proxyCoordinatorStarted = raknetUdpProxyCoordinator.Start(localAddress, maxConnCount);
+			if (proxyCoordinatorStarted)
+			{
+				var proxyServerStarted = raknetUdpProxyServer.Start().Connect(raknetUdpProxyCoordinator.GetMyIpAddress());
+				if (proxyServerStarted)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		public RaknetIPAddress GetMyIpAddress()
+		{
+			return raknetUdpProxyCoordinator.GetMyIpAddress();
 		}
 		public void Stop()
 		{
-
+			raknetUdpProxyCoordinator.Stop(() =>
+			{
+				raknetUdpProxyServer.Stop();
+			});
 		}
 	}
 }
