@@ -12,15 +12,15 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		/// <summary>
 		/// 有新的PeerClient连接进来
 		/// </summary>
-		public event Action<string, ushort> OnConnect;
+		public event Action<string, ushort, RaknetUdpPeerServer> OnConnect;
 		/// <summary>
 		/// 收到PeerClient的消息
 		/// </summary>
-		public event Action<string, ushort, byte[]> OnReceive;
+		public event Action<string, ushort, byte[], RaknetUdpPeerServer> OnReceive;
 		/// <summary>
 		/// 有PeerClient断开与PeerServer的连接
 		/// </summary>
-		public event Action<string, ushort> OnDisConnect;
+		public event Action<string, ushort, RaknetUdpPeerServer> OnDisConnect;
 
 
 
@@ -41,9 +41,9 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnReceive += RaknetUdpPeerServer_OnReceive;
 		}
 
-		private void RaknetUdpPeerServer_OnReceive(string address, ushort port, byte[] bytes) { }
-		private void RaknetUdpPeerServer_OnDisConnect(string address, ushort port) { }
-		private void RaknetUdpPeerServer_OnConnect(string address, ushort port) { }
+		private void RaknetUdpPeerServer_OnReceive(string address, ushort port, byte[] bytes, RaknetUdpPeerServer raknetUdpPeerServer) { }
+		private void RaknetUdpPeerServer_OnDisConnect(string address, ushort port, RaknetUdpPeerServer raknetUdpPeerServer) { }
+		private void RaknetUdpPeerServer_OnConnect(string address, ushort port, RaknetUdpPeerServer raknetUdpPeerServer) { }
 
 		public RaknetUdpPeerServer Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
@@ -162,17 +162,17 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		private void RaknetUdpPeerServer_OnRaknetReceive(string address, ushort port, byte[] bytes)
 		{
-			OnReceive(address, port, bytes);
+			OnReceive(address, port, bytes, this);
 		}
 
 		private void RaknetUdpPeerServer_OnDisconnectionNotification(string address, ushort port)
 		{
-			OnDisConnect(address, port);
+			OnDisConnect(address, port, this);
 		}
 
 		private void RaknetUdpPeerServer_OnNewIncomingConnection(string address, ushort port)
 		{
-			OnConnect(address, port);
+			OnConnect(address, port, this);
 		}
 
 		private class MyUDPProxyClientResultHandler : UDPProxyClientResultHandler

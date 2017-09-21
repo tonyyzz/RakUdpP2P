@@ -14,12 +14,12 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		private RaknetIPAddress _coordinatorAddress = null;
 
-		public RaknetUdpProxyServer()
+		internal RaknetUdpProxyServer()
 		{
 			udpProxyServer = new UDPProxyServer();
 		}
 
-		public RaknetUdpProxyServer Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
+		internal RaknetUdpProxyServer Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
 			rakPeer.AttachPlugin(udpProxyServer);
 			udpProxyServer.SetResultHandler(new MyUDPProxyServerResultHandler());
@@ -39,7 +39,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			return this;
 		}
 
-		public bool Connect(RaknetIPAddress coordinatorAddress)
+		internal bool Connect(RaknetIPAddress coordinatorAddress)
 		{
 			_coordinatorAddress = coordinatorAddress;
 			OnConnectionRequestAccepted += RaknetUdpProxyServer_OnConnectionRequestAccepted;
@@ -53,7 +53,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			return false;
 		}
 
-		public RaknetIPAddress GetMyIpAddress()
+		internal RaknetIPAddress GetMyIpAddress()
 		{
 			return GetMyAddress();
 		}
@@ -91,7 +91,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		/// 停止
 		/// </summary>
 		/// <param name="beforeAction"></param>
-		public void Stop(Action beforeAction = null)
+		internal void Stop(Action beforeAction = null)
 		{
 			beforeAction?.Invoke();
 			string myAddress = GetMyAddress().ToString();

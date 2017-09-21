@@ -13,15 +13,15 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		/// <summary>
 		/// 连接上PeerServer的事件通知
 		/// </summary>
-		public event Action<string, ushort> OnConnect;
+		public event Action<string, ushort, RaknetUdpPeerClient> OnConnect;
 		/// <summary>
 		/// 收到PeerServer消息的事件通知
 		/// </summary>
-		public event Action<string, ushort, byte[]> OnReceive;
+		public event Action<string, ushort, byte[], RaknetUdpPeerClient> OnReceive;
 		/// <summary>
 		/// 与PeerServer断开连接的事件通知
 		/// </summary>
-		public event Action<string, ushort> OnDisConnect;
+		public event Action<string, ushort, RaknetUdpPeerClient> OnDisConnect;
 
 
 
@@ -50,9 +50,9 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnDisConnect += RaknetUdpPeerClient_OnDisConnect;
 		}
 
-		private void RaknetUdpPeerClient_OnDisConnect(string address, ushort port) { }
-		private void RaknetUdpPeerClient_OnReceive(string address, ushort port, byte[] bytes) { }
-		private void RaknetUdpPeerClient_OnConnect(string address, ushort port) { }
+		private void RaknetUdpPeerClient_OnDisConnect(string address, ushort port, RaknetUdpPeerClient raknetUdpPeerClient) { }
+		private void RaknetUdpPeerClient_OnReceive(string address, ushort port, byte[] bytes, RaknetUdpPeerClient raknetUdpPeerClient) { }
+		private void RaknetUdpPeerClient_OnConnect(string address, ushort port, RaknetUdpPeerClient raknetUdpPeerClient) { }
 
 		public RaknetUdpPeerClient Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
@@ -111,7 +111,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		private void RaknetUdpPeerClient_OnRaknetReceive(string address, ushort port, byte[] bytes)
 		{
-			OnReceive(address, port, bytes);
+			OnReceive(address, port, bytes, this);
 		}
 
 		/// <summary>
@@ -170,7 +170,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			{
 				isProxyMsgSending = false;//（内部用）
 				_isConnectPeerServer = false;
-				OnDisConnect(address, port);
+				OnDisConnect(address, port, this);
 			}
 		}
 
@@ -188,7 +188,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			{
 				isProxyMsgSending = false;//（内部用）
 				_isConnectPeerServer = false;
-				OnDisConnect(address, port);
+				OnDisConnect(address, port, this);
 			}
 		}
 
@@ -220,7 +220,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 				_isConnectPeerServer = true;
 				new Thread(n =>
 				{
-					OnConnect(address, port);
+					OnConnect(address, port, this);
 				})
 				{ IsBackground = true, Priority = ThreadPriority.Highest }.Start();
 				//代理连接成功，对_peerServerAddress重新赋值，该值实际是proxy的一个临时地址，通过该值直接发送消息给peerServer，但通过代理的方式要持续发送消息给proxy才能保持连接，如果一段时间内不发送消息，则连接主动断开
@@ -264,7 +264,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 				_isConnectPeerServer = true;
 				new Thread(n =>
 				{
-					OnConnect(address, port);
+					OnConnect(address, port, this);
 				})
 				{ IsBackground = true, Priority = ThreadPriority.Highest }.Start();
 				//通过NAT与peerServer连接成功后，立即断开与natServer的连接

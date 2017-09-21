@@ -15,12 +15,12 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 	{
 		private UDPProxyCoordinator udpProxyCoordinator = null;
 
-		public RaknetUdpProxyCoordinator()
+		internal RaknetUdpProxyCoordinator()
 		{
 			udpProxyCoordinator = new UDPProxyCoordinator();
 		}
 
-		public bool Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
+		internal bool Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
 			rakPeer.AttachPlugin(udpProxyCoordinator);
 			udpProxyCoordinator.SetRemoteLoginPassword(RaknetConfig.COORDINATOR_PASSWORD);
@@ -52,7 +52,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			return false;
 		}
 
-		public RaknetIPAddress GetMyIpAddress()
+		internal RaknetIPAddress GetMyIpAddress()
 		{
 			return GetMyAddress();
 		}
@@ -66,7 +66,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		/// 停止
 		/// </summary>
 		/// <param name="beforeAction"></param>
-		public void Stop(Action beforeAction = null)
+		internal void Stop(Action beforeAction = null)
 		{
 			beforeAction?.Invoke();
 			string myAddress = GetMyAddress().ToString();
