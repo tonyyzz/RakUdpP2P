@@ -10,40 +10,40 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 {
 	public class RaknetBase
 	{
-		public event Action<string, ushort> OnConnectionRequestAccepted;
-		public event Action<string, ushort> OnNewIncomingConnection;
-		public event Action<string, ushort, byte[]> OnReiceve;
-		public event Action<string, ushort> OnDisconnectionNotification;
-		public event Action<string, ushort> OnConnectionLost;
-		public event Action<string, ushort> OnNatPunchthroughSucceeded;
-		public event Action<string, ushort> OnNatPunchthroughFailed;
-		public event Action<string, ushort> OnConnectionAttemptFailed;
-		public event Action<string, ushort> OnConnectionAttemptFailedCommon;
-		public event Action<string, ushort> OnNoFreeIncomingConnections;
-		public event Action<string, ushort> OnIncompatibleProtocolVersion;
-		public event Action<string, ushort> OnFcm2NewHost;
-		public event Action<string, ushort, byte> OnNatTypeDetectionRequest;
-		public event Action<string, ushort> OnUnconnectedPing;
-		public event Action<string, ushort> OnUnconnectedPong;
-		public event Action<string, ushort, byte> OnUdpProxyGeneral;
+		protected event Action<string, ushort> OnConnectionRequestAccepted;
+		protected event Action<string, ushort> OnNewIncomingConnection;
+		protected event Action<string, ushort, byte[]> OnRaknetReceive;
+		protected event Action<string, ushort> OnDisconnectionNotification;
+		protected event Action<string, ushort> OnConnectionLost;
+		protected event Action<string, ushort> OnNatPunchthroughSucceeded;
+		protected event Action<string, ushort> OnNatPunchthroughFailed;
+		protected event Action<string, ushort> OnConnectionAttemptFailed;
+		protected event Action<string, ushort> OnConnectionAttemptFailedCommon;
+		protected event Action<string, ushort> OnNoFreeIncomingConnections;
+		protected event Action<string, ushort> OnIncompatibleProtocolVersion;
+		protected event Action<string, ushort> OnFcm2NewHost;
+		protected event Action<string, ushort, byte> OnNatTypeDetectionRequest;
+		protected event Action<string, ushort> OnUnconnectedPing;
+		protected event Action<string, ushort> OnUnconnectedPong;
+		protected event Action<string, ushort, byte> OnUdpProxyGeneral;
 
 		protected RakPeerInterface rakPeer = null;
 		protected bool isThreadRunning = true;
 
-		public RaknetBase()
+		protected RaknetBase()
 		{
 			RaknetCSRunTest.JudgeRaknetCanRun();
 			rakPeer = RakPeerInterface.GetInstance();
 			EventRegister();
 		}
 
-		public RaknetAddress GetMyAddress()
+		protected RaknetIPAddress GetMyAddress()
 		{
 			SystemAddress systemAddress = rakPeer.GetMyBoundAddress();
-			return new RaknetAddress(systemAddress.ToString(false), systemAddress.GetPort());
+			return new RaknetIPAddress(systemAddress.ToString(false), systemAddress.GetPort());
 		}
 
-		public ulong GetMyRaknetGUID()
+		protected ulong GetMyRaknetGUID()
 		{
 			return rakPeer.GetMyGUID().g;
 		}
@@ -52,7 +52,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		{
 			OnConnectionRequestAccepted += Method_OnConnectionRequestAccepted;
 			OnNewIncomingConnection += Method_OnNewIncomingConnection;
-			OnReiceve += Method_OnReiceve;
+			OnRaknetReceive += Method_OnRaknetReceive;
 			OnDisconnectionNotification += Method_OnDisconnectionNotification;
 			OnConnectionLost += Method_OnConnectionLost;
 			OnNatPunchthroughSucceeded += Method_OnNatPunchthroughSucceeded;
@@ -81,7 +81,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		private void Method_OnConnectionAttemptFailed(string address, ushort port) { }
 		private void Method_OnNatPunchthroughFailed(string address, ushort port) { }
 		private void Method_OnNatPunchthroughSucceeded(string address, ushort port) { }
-		private void Method_OnReiceve(string address, ushort port, byte[] datas) { }
+		private void Method_OnRaknetReceive(string address, ushort port, byte[] datas) { }
 		private void Method_OnConnectionLost(string address, ushort port) { }
 		private void Method_OnDisconnectionNotification(string address, ushort port) { }
 		private void Method_OnNewIncomingConnection(string address, ushort port) { }
@@ -215,7 +215,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 									defaultMessageIDType.WriteMsgTypeInfo(rakPeer, peerAddress, peerPort, "接收消息 [OnReiceve]");
 									if (testPacket.data.Count() > 1) //过滤掉通过proxy发送过来的用来保持连接的消息
 									{
-										OnReiceve(peerAddress, peerPort, testPacket.data.Skip(1).ToArray());
+										OnRaknetReceive(peerAddress, peerPort, testPacket.data.Skip(1).ToArray());
 									}
 								}
 								break;

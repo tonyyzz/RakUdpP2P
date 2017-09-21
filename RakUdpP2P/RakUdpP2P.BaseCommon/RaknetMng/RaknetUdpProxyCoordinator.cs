@@ -20,7 +20,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			udpProxyCoordinator = new UDPProxyCoordinator();
 		}
 
-		public bool Start(RaknetAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
+		public bool Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
 			rakPeer.AttachPlugin(udpProxyCoordinator);
 			udpProxyCoordinator.SetRemoteLoginPassword(RaknetConfig.COORDINATOR_PASSWORD);
@@ -50,6 +50,11 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			isThreadRunning = false;
 			return false;
+		}
+
+		public RaknetIPAddress GetMyIpAddress()
+		{
+			return GetMyAddress();
 		}
 
 		private void RaknetUdpProxyCoordinator_OnUdpProxyGeneral(string address, ushort port, byte theByte)

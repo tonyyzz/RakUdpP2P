@@ -9,20 +9,43 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 {
 	public class RaknetUdpPeerServer : RaknetBase
 	{
+		/// <summary>
+		/// 有新的PeerClient连接进来
+		/// </summary>
+		public event Action<string, ushort> OnConnect;
+		/// <summary>
+		/// 收到PeerClient的消息
+		/// </summary>
+		public event Action<string, ushort, byte[]> OnReceive;
+		/// <summary>
+		/// 有PeerClient断开与PeerServer的连接
+		/// </summary>
+		public event Action<string, ushort> OnDisConnect;
+
+
+
 		private NatPunchthroughClient natPunchthroughClient = null;
 		//private NatTypeDetectionClient natTypeDetectionClient = null;
 		private UDPProxyClient udpProxyClient = null;
 
-		private RaknetAddress _natServerAddress = null;
-		private RaknetAddress _coordinatorAddress = null;
+		private RaknetIPAddress _natServerAddress = null;
+		private RaknetIPAddress _coordinatorAddress = null;
 
 		public RaknetUdpPeerServer()
 		{
 			natPunchthroughClient = new NatPunchthroughClient();
 			//natTypeDetectionClient = new NatTypeDetectionClient();
 			udpProxyClient = new UDPProxyClient();
+			OnConnect += RaknetUdpPeerServer_OnConnect;
+			OnDisConnect += RaknetUdpPeerServer_OnDisConnect;
+			OnReceive += RaknetUdpPeerServer_OnReceive;
 		}
-		public RaknetUdpPeerServer Start(RaknetAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
+
+		private void RaknetUdpPeerServer_OnReceive(string address, ushort port, byte[] bytes) { }
+		private void RaknetUdpPeerServer_OnDisConnect(string address, ushort port) { }
+		private void RaknetUdpPeerServer_OnConnect(string address, ushort port) { }
+
+		public RaknetUdpPeerServer Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
 			rakPeer.AttachPlugin(natPunchthroughClient);
 			//rakPeer.AttachPlugin(natTypeDetectionClient);
@@ -41,11 +64,15 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			return this;
 		}
 
-		public bool Connect(RaknetAddress natServerAddress, RaknetAddress coordinatorAddress)
+		public bool Connect(RaknetIPAddress natServerAddress, RaknetIPAddress coordinatorAddress)
 		{
 			_natServerAddress = natServerAddress;
 			_coordinatorAddress = coordinatorAddress;
+			OnNewIncomingConnection += RaknetUdpPeerServer_OnNewIncomingConnection;
+			OnDisconnectionNotification += RaknetUdpPeerServer_OnDisconnectionNotification;
+			OnRaknetReceive += RaknetUdpPeerServer_OnRaknetReceive;
 			ReceiveThreadStart();
+
 			var connectNatServerResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
 			if (connectNatServerResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)//尝试连接穿透服务器开始
 			{
@@ -69,6 +96,83 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			isThreadRunning = false;
 			return false;
+		}
+
+		public RaknetIPAddress GetMyIpAddress()
+		{
+			return GetMyAddress();
+		}
+
+		public ulong GetMyGuid()
+		{
+			return rakPeer.GetMyGUID().g;
+		}
+
+		/// <summary>
+		/// 获取所有连接的Peer列表
+		/// </summary>
+		/// <returns></returns>
+		public List<RaknetIPAddress> GetAllConnectionList()
+		{
+			List<RaknetIPAddress> list = new List<RaknetIPAddress>();
+			ushort numberOfSystemts = rakPeer.NumberOfConnections();
+			rakPeer.GetConnectionList(out SystemAddress[] remoteSystems, ref numberOfSystemts);
+			foreach (SystemAddress systemAddress in remoteSystems)
+			{
+				string address = systemAddress.ToString(false);
+				ushort port = systemAddress.GetPort();
+				list.Add(new RaknetIPAddress(address, port));
+			}
+			//过滤掉 NAT Server 和 Coordinator
+			list.RemoveAll(m => m.Address == _natServerAddress.Address && m.Port == _natServerAddress.Port);
+			list.RemoveAll(m => m.Address == _coordinatorAddress.Address && m.Port == _coordinatorAddress.Port);
+			return list;
+		}
+
+		/// <summary>
+		/// 获取Peer的连接个数
+		/// </summary>
+		/// <returns></returns>
+		public int GetConnectionCount()
+		{
+			return GetAllConnectionList().Count();
+		}
+
+		public void Send(string peerAddress, ushort peerPort, byte[] bytes)
+		{
+			bytes = new byte[] { (byte)DefaultMessageIDTypes.ID_USER_PACKET_ENUM }.Concat(bytes).ToArray();
+			rakPeer.Send(bytes, bytes.Length,
+				PacketPriority.HIGH_PRIORITY,
+				PacketReliability.RELIABLE_ORDERED,
+				(char)0,
+				new AddressOrGUID(new SystemAddress(peerAddress, peerPort)),
+				false); //该值为false表示给指定的peer发送消息
+		}
+
+		public void Broadcast(string peerAddress, ushort peerPort, byte[] bytes)
+		{
+			bytes = new byte[] { (byte)DefaultMessageIDTypes.ID_USER_PACKET_ENUM }.Concat(bytes).ToArray();
+			rakPeer.Send(bytes, bytes.Length,
+				PacketPriority.HIGH_PRIORITY,
+				PacketReliability.RELIABLE_ORDERED,
+				(char)0,
+				new AddressOrGUID(new SystemAddress(peerAddress, peerPort)),
+				true); //该值为true表示广播，即给除此给PeerAddress之外的peer发送消息
+		}
+
+		private void RaknetUdpPeerServer_OnRaknetReceive(string address, ushort port, byte[] bytes)
+		{
+			OnReceive(address, port, bytes);
+		}
+
+		private void RaknetUdpPeerServer_OnDisconnectionNotification(string address, ushort port)
+		{
+			OnDisConnect(address, port);
+		}
+
+		private void RaknetUdpPeerServer_OnNewIncomingConnection(string address, ushort port)
+		{
+			OnConnect(address, port);
 		}
 
 		private class MyUDPProxyClientResultHandler : UDPProxyClientResultHandler

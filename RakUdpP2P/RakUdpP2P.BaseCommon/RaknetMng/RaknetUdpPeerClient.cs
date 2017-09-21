@@ -10,26 +10,51 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 {
 	public class RaknetUdpPeerClient : RaknetBase
 	{
-		private NatPunchthroughClient natPunchthroughClient = null;
+		/// <summary>
+		/// 连接上PeerServer的事件通知
+		/// </summary>
+		public event Action<string, ushort> OnConnect;
+		/// <summary>
+		/// 收到PeerServer消息的事件通知
+		/// </summary>
+		public event Action<string, ushort, byte[]> OnReceive;
+		/// <summary>
+		/// 与PeerServer断开连接的事件通知
+		/// </summary>
+		public event Action<string, ushort> OnDisConnect;
+
+
+
+		private NatPunchthroughClient natPunchthroughClient = null;//（内部用）
+
 		//private NatTypeDetectionClient natTypeDetectionClient = null;
-		private UDPProxyClient udpProxyClient = null;
+		private UDPProxyClient udpProxyClient = null;//（内部用）
 
-		private RaknetAddress _natServerAddress = null;
-		private RaknetAddress _coordinatorAddress = null;
-		private static RaknetAddress _proxyServerAddress = null; //临时代理服务器地址
-		private RaknetAddress _peerServerAddress = null;
+		private RaknetIPAddress _peerServerAddress = null;
 		private ulong _udpPeerServerGuid = 0;
+		private bool _isConnectPeerServer = false; //是否连接上peerServer
 
-		private bool isProxyMsgSending = false; //启动代理转发消息时，是否持续发送消息来保持连接
+		private RaknetIPAddress _natServerAddress = null;//（内部用）
+		private RaknetIPAddress _coordinatorAddress = null;//（内部用）
+		private static RaknetIPAddress _proxyServerAddress = null; //（内部用）临时代理服务器地址
+
+		private bool isProxyMsgSending = false; //（内部用）启动代理转发消息时，是否持续发送消息来保持连接
 
 		public RaknetUdpPeerClient()
 		{
 			natPunchthroughClient = new NatPunchthroughClient();
 			//natTypeDetectionClient = new NatTypeDetectionClient();
 			udpProxyClient = new UDPProxyClient();
+			OnConnect += RaknetUdpPeerClient_OnConnect;
+			OnReceive += RaknetUdpPeerClient_OnReceive;
+			OnDisConnect += RaknetUdpPeerClient_OnDisConnect;
 		}
 
-		public RaknetUdpPeerClient Start(RaknetAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
+		private void RaknetUdpPeerClient_OnDisConnect(string address, ushort port) { }
+		private void RaknetUdpPeerClient_OnReceive(string address, ushort port, byte[] bytes) { }
+		private void RaknetUdpPeerClient_OnConnect(string address, ushort port) { }
+
+		public RaknetUdpPeerClient Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
 			rakPeer.AttachPlugin(natPunchthroughClient);
 			//rakPeer.AttachPlugin(natTypeDetectionClient);
@@ -48,7 +73,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			return this;
 		}
 
-		public bool Connect(RaknetAddress natServerAddress, RaknetAddress coordinatorAddress, RaknetAddress peerServerAddress, ulong udpPeerServerGuid)
+		public bool Connect(RaknetIPAddress natServerAddress, RaknetIPAddress coordinatorAddress, RaknetIPAddress peerServerAddress, ulong udpPeerServerGuid)
 		{
 			_natServerAddress = natServerAddress;
 			_coordinatorAddress = coordinatorAddress;
@@ -59,8 +84,11 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnNatPunchthroughFailed += RaknetUdpPeerClient_OnNatPunchthroughFailed;
 			OnDisconnectionNotification += RaknetUdpPeerClient_OnDisconnectionNotification;
 			OnConnectionLost += RaknetUdpPeerClient_OnConnectionLost;
+			OnRaknetReceive += RaknetUdpPeerClient_OnRaknetReceive;
 			ReceiveThreadStart();
 
+			//*************************************************************************************************************
+			//*******************************************  【---注意！---】  ***********************************************
 			//*************************************************************************************************************
 
 			//启动NATPunchthrough连接
@@ -68,6 +96,8 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			//（测试）穿透失败后转代理，但要先连接协调器（在此测试，直接以代理的方式通讯，而不通过NAT穿透，测试完后，要记得换成上面一行代码）
 			//var connectResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
 
+			//*************************************************************************************************************
+			//*******************************************  【---注意！---】  ***********************************************
 			//*************************************************************************************************************
 
 			if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)
@@ -77,6 +107,53 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			isThreadRunning = false;
 			return false;
+		}
+
+		private void RaknetUdpPeerClient_OnRaknetReceive(string address, ushort port, byte[] bytes)
+		{
+			OnReceive(address, port, bytes);
+		}
+
+		/// <summary>
+		/// 获取与PeerServer的连接状态
+		/// </summary>
+		/// <returns></returns>
+		public bool GetConnectPeerServerState()
+		{
+			return _isConnectPeerServer;
+		}
+
+		/// <summary>
+		/// 获取连接的PeerServer的连接地址（注意：由于代理的原因，该方法只能在连接成功后调用才会得到正确的IPAddress）
+		/// </summary>
+		/// <returns></returns>
+		public RaknetIPAddress GetPeerServerAddress()
+		{
+			return _peerServerAddress;
+		}
+
+		public ulong GetPeerServerGuid()
+		{
+			return _udpPeerServerGuid;
+		}
+
+		public RaknetIPAddress GetMyIpAddress()
+		{
+			return GetMyAddress();
+		}
+
+		/// <summary>
+		/// 给PeerServer发送消息
+		/// </summary>
+		public void Send(byte[] bytes)
+		{
+			bytes = new byte[] { (byte)DefaultMessageIDTypes.ID_USER_PACKET_ENUM }.Concat(bytes).ToArray();
+			rakPeer.Send(bytes, bytes.Length,
+				PacketPriority.HIGH_PRIORITY,
+				PacketReliability.RELIABLE_ORDERED,
+				(char)0,
+				new AddressOrGUID(new SystemAddress(_peerServerAddress.Address, _peerServerAddress.Port)),
+				false);
 		}
 
 		private void RaknetUdpPeerClient_OnDisconnectionNotification(string address, ushort port)
@@ -91,7 +168,9 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			else
 			{
-				isProxyMsgSending = false;
+				isProxyMsgSending = false;//（内部用）
+				_isConnectPeerServer = false;
+				OnDisConnect(address, port);
 			}
 		}
 
@@ -107,7 +186,9 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			else
 			{
-				isProxyMsgSending = false;
+				isProxyMsgSending = false;//（内部用）
+				_isConnectPeerServer = false;
+				OnDisConnect(address, port);
 			}
 		}
 
@@ -136,8 +217,14 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			else if (_proxyServerAddress != null && address == _proxyServerAddress.Address && port == _proxyServerAddress.Port)
 			{
+				_isConnectPeerServer = true;
+				new Thread(n =>
+				{
+					OnConnect(address, port);
+				})
+				{ IsBackground = true, Priority = ThreadPriority.Highest }.Start();
 				//代理连接成功，对_peerServerAddress重新赋值，该值实际是proxy的一个临时地址，通过该值直接发送消息给peerServer，但通过代理的方式要持续发送消息给proxy才能保持连接，如果一段时间内不发送消息，则连接主动断开
-				_peerServerAddress = new RaknetAddress(address, port);
+				_peerServerAddress = new RaknetIPAddress(address, port);
 				//开启线程，持续向proxy发送消息，只能发送一个字节，并且消息类型必须为 DefaultMessageIDTypes.ID_USER_PACKET_ENUM
 				ThreadPool.QueueUserWorkItem(obj =>
 				{
@@ -151,11 +238,11 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 						{
 							break;
 						}
-						Console.WriteLine("dddddddd");
+						RaknetExtension.WriteInfo("dddddddd");
 						//循环发送消息以保持连接
 						var tempByte = new byte[] { (byte)DefaultMessageIDTypes.ID_USER_PACKET_ENUM };
 						rakPeer.Send(tempByte, tempByte.Length,
-							PacketPriority.IMMEDIATE_PRIORITY,
+							PacketPriority.LOW_PRIORITY,
 							PacketReliability.RELIABLE_ORDERED,
 							(char)0,
 							new AddressOrGUID(new SystemAddress(_peerServerAddress.Address, _peerServerAddress.Port)),
@@ -174,11 +261,17 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			}
 			else
 			{
+				_isConnectPeerServer = true;
+				new Thread(n =>
+				{
+					OnConnect(address, port);
+				})
+				{ IsBackground = true, Priority = ThreadPriority.Highest }.Start();
 				//通过NAT与peerServer连接成功后，立即断开与natServer的连接
 				rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port)), true);
 			}
 		}
-		
+
 		private void RaknetUdpPeerClient_OnNatPunchthroughSucceeded(string arg1, ushort arg2)
 		{
 			//穿透成功后连接peerServer
@@ -196,7 +289,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			{
 				RaknetExtension.WriteInfo("▲▲▲OnForwardingSuccess");
 				//请求转发成功后，连接代理服务器
-				_proxyServerAddress = new RaknetAddress(proxyIPAddress, proxyPort);
+				_proxyServerAddress = new RaknetIPAddress(proxyIPAddress, proxyPort);
 				var peer = proxyClientPlugin.GetRakPeerInterface();
 				var systemAddress = peer.GetMyBoundAddress();
 				peer.Connect(proxyIPAddress, proxyPort, "", 0);
@@ -231,6 +324,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		public void Stop(Action beforeAction = null)
 		{
 			beforeAction?.Invoke();
+			_isConnectPeerServer = false;
 			string myAddress = GetMyAddress().ToString();
 			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port)), true);
 			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_coordinatorAddress.Address, _coordinatorAddress.Port)), true);

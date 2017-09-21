@@ -16,7 +16,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			natPunchthroughServer = new NatPunchthroughServer();
 		}
 
-		public bool Start(RaknetAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
+		public bool Start(RaknetIPAddress localAddress = null, ushort maxConnCount = ushort.MaxValue)
 		{
 			rakPeer.AttachPlugin(natPunchthroughServer);
 			rakPeer.SetMaximumIncomingConnections(maxConnCount);
@@ -46,7 +46,12 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			return false;
 		}
 
-		
+		public RaknetIPAddress GetMyIpAddress()
+		{
+			return GetMyAddress();
+		}
+
+
 		/// <summary>
 		/// 停止
 		/// </summary>
