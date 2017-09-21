@@ -326,7 +326,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			//穿透成功后连接peerServer
 			rakPeer.Connect(_peerServerAddress.Address, _peerServerAddress.Port, "", 0);
 
-			//穿透成功后连接peerServer，改进：先ping
+			//穿透成功后连接peerServer，另：先ping
 			//rakPeer.Connect(_peerServerAddress.Address, _peerServerAddress.Port, "", 0);
 			//rakPeer.Ping(_peerServerAddress.Address, _peerServerAddress.Port, true);
 		}
@@ -335,7 +335,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			//穿透失败后转代理，但要先连接协调器
 			rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
 
-			//穿透失败后转代理，但要先连接协调器，改进：先ping
+			//穿透失败后转代理，但要先连接协调器，另：先ping
 			//rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
 			//rakPeer.Ping(_coordinatorAddress.Address, _coordinatorAddress.Port, true);
 		}
