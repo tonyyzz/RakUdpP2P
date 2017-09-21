@@ -71,31 +71,66 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnNewIncomingConnection += RaknetUdpPeerServer_OnNewIncomingConnection;
 			OnDisconnectionNotification += RaknetUdpPeerServer_OnDisconnectionNotification;
 			OnRaknetReceive += RaknetUdpPeerServer_OnRaknetReceive;
+			OnUnconnectedPong += RaknetUdpPeerServer_OnUnconnectedPong;
 			ReceiveThreadStart();
 
-			var connectNatServerResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
-			if (connectNatServerResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)//尝试连接穿透服务器开始
-			{
-				//natTypeDetectionClient.DetectNATType(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port));
+			//var connectNatServerResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
+			//if (connectNatServerResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)//尝试连接穿透服务器开始
+			//{
+			//	//natTypeDetectionClient.DetectNATType(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port));
 
-				//连接coordinator，为走Proxy流程备用
-				udpProxyClient.SetResultHandler(new MyUDPProxyClientResultHandler());
-				var connectCoordinatorResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
-				if (connectCoordinatorResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED) //尝试连接协调器开始
+			//	//连接coordinator，为走Proxy流程备用
+			//	udpProxyClient.SetResultHandler(new MyUDPProxyClientResultHandler());
+			//	var connectCoordinatorResult = rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+			//	if (connectCoordinatorResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED) //尝试连接协调器开始
+			//	{
+			//		return true;
+			//	}
+			//	else
+			//	{
+			//		RaknetExtension.WriteWarning("peerServer尝试连接协调器失败");
+			//	}
+			//}
+			//else
+			//{
+			//	RaknetExtension.WriteWarning("peerServer尝试连接穿透服务器失败");
+			//}
+
+
+
+			//改进：先ping
+			var pingFlag = rakPeer.Ping(_natServerAddress.Address, _natServerAddress.Port, true);
+			if (pingFlag)
+			{
+				return true;
+			}
+
+
+			isThreadRunning = false;
+			return false;
+		}
+
+		private void RaknetUdpPeerServer_OnUnconnectedPong(string address, ushort port)
+		{
+			//先ping通后再连接
+			if (address == _natServerAddress.Address && port == _natServerAddress.Port)
+			{
+				//连接natServer
+				var connectResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
+				if (connectResult == ConnectionAttemptResult.CONNECTION_ATTEMPT_STARTED)//尝试连接穿透服务器开始
 				{
-					return true;
+					rakPeer.Ping(_coordinatorAddress.Address, _coordinatorAddress.Port, true);
 				}
-				else
-				{
-					RaknetExtension.WriteWarning("peerServer尝试连接协调器失败");
-				}
+			}
+			else if (address == _coordinatorAddress.Address && port == _coordinatorAddress.Port)
+			{
+				//连接coordinator
+				rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
 			}
 			else
 			{
-				RaknetExtension.WriteWarning("peerServer尝试连接穿透服务器失败");
+
 			}
-			isThreadRunning = false;
-			return false;
 		}
 
 		public RaknetIPAddress GetMyIpAddress()
