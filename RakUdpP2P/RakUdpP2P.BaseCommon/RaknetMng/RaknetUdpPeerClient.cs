@@ -120,7 +120,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		/// <returns></returns>
 		public bool GetConnectPeerServerState()
 		{
-			return _isConnectPeerServer;
+			return _isConnectPeerServer; 
 		}
 
 		/// <summary>
