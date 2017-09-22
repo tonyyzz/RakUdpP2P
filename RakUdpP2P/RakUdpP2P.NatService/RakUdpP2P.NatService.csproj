@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{45545912-3A29-4CC8-89FC-34A7499E2529}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RakUdpP2P.BaseCommon</RootNamespace>
-    <AssemblyName>RakUdpP2P.BaseCommon</AssemblyName>
+    <ProjectGuid>{05300689-1443-422C-990B-A903B80E9CE0}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>RakUdpP2P.NatService</RootNamespace>
+    <AssemblyName>RakUdpP2P.NatService</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -40,26 +42,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="INIBase.cs" />
-    <Compile Include="IPAddressUtils.cs" />
-    <Compile Include="ModelHelper.cs" />
+    <Compile Include="NatServerCrowd\ConsoleCloseHandler.cs" />
+    <Compile Include="NatServerCrowd\NatServerCrowd.cs" />
+    <Compile Include="NatServerCrowd\NatServerCrowdStore.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RaknetMng\RaknetIPAddress.cs" />
-    <Compile Include="RaknetMng\RaknetBase.cs" />
-    <Compile Include="RaknetMng\RaknetConfig.cs" />
-    <Compile Include="RaknetMng\RaknetCSRunTest.cs" />
-    <Compile Include="RaknetMng\RaknetExtension.cs" />
-    <Compile Include="RaknetMng\RaknetUdpNATPTServer.cs" />
-    <Compile Include="RaknetMng\RaknetUdpPeerClient.cs" />
-    <Compile Include="RaknetMng\RaknetUdpPeerServer.cs" />
-    <Compile Include="RaknetMng\RaknetUdpProxy.cs" />
-    <Compile Include="RaknetMng\RaknetUdpProxyCoordinator.cs" />
-    <Compile Include="RaknetMng\RaknetUdpProxyServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RakUdpP2P.RaknetSwigCS\RakUdpP2P.RaknetSwigCS.csproj">
-      <Project>{07b7a658-97da-4fac-9522-539b0d8bfd63}</Project>
-      <Name>RakUdpP2P.RaknetSwigCS</Name>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RakUdpP2P.BaseCommon\RakUdpP2P.BaseCommon.csproj">
+      <Project>{45545912-3a29-4cc8-89fc-34a7499e2529}</Project>
+      <Name>RakUdpP2P.BaseCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RakUdpP2P.DAL\RakUdpP2P.DAL.csproj">
+      <Project>{b0286eba-a9c0-4351-bf6c-b0a25e7d42d5}</Project>
+      <Name>RakUdpP2P.DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RakUdpP2P.Model\RakUdpP2P.Model.csproj">
+      <Project>{ea619beb-c423-47cb-b97a-9cd22c530a5e}</Project>
+      <Name>RakUdpP2P.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

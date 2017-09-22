@@ -44,9 +44,26 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProxyCrowd\ConsoleCloseHandler.cs" />
+    <Compile Include="ProxyCrowd\ProxyCrowd.cs" />
+    <Compile Include="ProxyCrowd\ProxyCrowdStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RakUdpP2P.BaseCommon\RakUdpP2P.BaseCommon.csproj">
+      <Project>{45545912-3a29-4cc8-89fc-34a7499e2529}</Project>
+      <Name>RakUdpP2P.BaseCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RakUdpP2P.DAL\RakUdpP2P.DAL.csproj">
+      <Project>{b0286eba-a9c0-4351-bf6c-b0a25e7d42d5}</Project>
+      <Name>RakUdpP2P.DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RakUdpP2P.Model\RakUdpP2P.Model.csproj">
+      <Project>{ea619beb-c423-47cb-b97a-9cd22c530a5e}</Project>
+      <Name>RakUdpP2P.Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -80,6 +80,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnRaknetReceive += RaknetUdpPeerServer_OnRaknetReceive;
 			//OnUnconnectedPong += RaknetUdpPeerServer_OnUnconnectedPong;
 			OnConnectionAttemptFailed += RaknetUdpPeerServer_OnConnectionAttemptFailed;
+			OnNoFreeIncomingConnections += RaknetUdpPeerServer_OnNoFreeIncomingConnections;
 			ReceiveThreadStart();
 
 			var connectNatServerResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
@@ -116,6 +117,13 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 			isThreadRunning = false;
 			return false;
+		}
+
+		private void RaknetUdpPeerServer_OnNoFreeIncomingConnections(string address, ushort port)
+		{
+			//连接失败
+			isThreadRunning = false;
+			OnConnectFailed(address, port, this);
 		}
 
 		private void RaknetUdpPeerServer_OnConnectionAttemptFailed(string address, ushort port)

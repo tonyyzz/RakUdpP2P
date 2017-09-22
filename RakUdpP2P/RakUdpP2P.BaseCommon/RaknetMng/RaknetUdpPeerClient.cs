@@ -93,6 +93,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnRaknetReceive += RaknetUdpPeerClient_OnRaknetReceive;
 			//OnUnconnectedPong += RaknetUdpPeerClient_OnUnconnectedPong;
 			OnConnectionAttemptFailed += RaknetUdpPeerClient_OnConnectionAttemptFailed;
+			OnNoFreeIncomingConnections += RaknetUdpPeerClient_OnNoFreeIncomingConnections;
 			ReceiveThreadStart();
 
 			//*************************************************************************************************************
@@ -126,6 +127,15 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 			isThreadRunning = false;
 			return false;
+		}
+
+		private void RaknetUdpPeerClient_OnNoFreeIncomingConnections(string address, ushort port)
+		{
+			//连接失败
+			isThreadRunning = false;
+			isProxyMsgSending = false;
+			_isConnectPeerServer = false;
+			OnConnectFailed(address, port, this);
 		}
 
 		private void RaknetUdpPeerClient_OnConnectionAttemptFailed(string address, ushort port)
