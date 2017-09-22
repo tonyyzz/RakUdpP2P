@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RakUdpP2P.BaseCommon;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace RakUdpP2P.UdpProxyConsole
 		public void Do()
 		{
 			NatServerCrowd natServerCrowd = new NatServerCrowd();
-			natServerCrowd.Start(2);
+			natServerCrowd.Start();
 			int count = natServerCrowd.GetCount();
 			var list = natServerCrowd.GetAddressList();
 			Console.WriteLine("NatServer IP列表：");
@@ -19,6 +20,8 @@ namespace RakUdpP2P.UdpProxyConsole
 			{
 				Console.WriteLine(item.ToString());
 			});
+
+			Console.WriteLine("外网地址：{0}", IPAddressUtils.GetOuterNatIP());
 		}
 	}
 }

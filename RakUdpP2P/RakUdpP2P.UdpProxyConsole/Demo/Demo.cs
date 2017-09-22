@@ -11,36 +11,41 @@ namespace RakUdpP2P.UdpProxyConsole
 	{
 		public void Do()
 		{
-			#region udpProxy
-
+			//#region udpProxy
 			//start proxy
-			RaknetUdpProxy raknetUdpProxy = new RaknetUdpProxy();
-			var proxyStarted = raknetUdpProxy.Start(RaknetConfig.proxyAddress);
-			if (!proxyStarted)
-			{
-				Console.WriteLine("Proxy启动失败");
-				Console.ReadKey();
-				return;
-			}
-			Console.WriteLine("Proxy启动成功，IP地址为：{0}", raknetUdpProxy.GetMyIpAddress().ToString());
+			//RaknetUdpProxy raknetUdpProxy = new RaknetUdpProxy();
+			//var proxyStarted = raknetUdpProxy.Start(RaknetConfig.proxyAddress);
+			//if (!proxyStarted)
+			//{
+			//	Console.WriteLine("Proxy启动失败");
+			//	Console.ReadKey();
+			//	return;
+			//}
+			//Console.WriteLine("Proxy启动成功，IP地址为：{0}", raknetUdpProxy.GetMyIpAddress().ToString());
 
-			#endregion
+			//#endregion
 
 
-			//start natServer
-			RaknetUdpNATPTServer raknetUdpNATPTServer = new RaknetUdpNATPTServer();
-			var udpNATPTServerStarted = raknetUdpNATPTServer.Start(RaknetConfig.natServerAddress);
-			if (!udpNATPTServerStarted)
-			{
-				Console.WriteLine("UdpNATPTServer启动失败");
-				Console.ReadKey();
-				return;
-			}
-			Console.WriteLine("UdpNATPTServer启动成功，IP地址为：{0}", raknetUdpNATPTServer.GetMyIpAddress().ToString());
+			////start natServer
+			//RaknetUdpNATPTServer raknetUdpNATPTServer = new RaknetUdpNATPTServer();
+			//var udpNATPTServerStarted = raknetUdpNATPTServer.Start(RaknetConfig.natServerAddress);
+			//if (!udpNATPTServerStarted)
+			//{
+			//	Console.WriteLine("UdpNATPTServer启动失败");
+			//	Console.ReadKey();
+			//	return;
+			//}
+			//Console.WriteLine("UdpNATPTServer启动成功，IP地址为：{0}", raknetUdpNATPTServer.GetMyIpAddress().ToString());
+
+			//var raknetUdpNATPTServerAddress = raknetUdpNATPTServer.GetMyIpAddress();
+			//var raknetUdpProxyAddress = raknetUdpProxy.GetMyIpAddress();
+
+			var raknetUdpNATPTServerAddress = new RaknetIPAddress("47.94.21.115", 666);
+			var raknetUdpProxyAddress = new RaknetIPAddress("47.94.21.115", 777);
 
 			//start PeerServer
 			RaknetUdpPeerServer raknetUdpPeerServer = new RaknetUdpPeerServer();
-			var udpPeerServerStarted = raknetUdpPeerServer.Start().Connect(raknetUdpNATPTServer.GetMyIpAddress(), raknetUdpProxy.GetMyIpAddress());
+			var udpPeerServerStarted = raknetUdpPeerServer.Start().Connect(raknetUdpNATPTServerAddress, raknetUdpProxyAddress);
 			if (!udpPeerServerStarted)
 			{
 				Console.WriteLine("UdpPeerServer启动失败");
@@ -57,7 +62,7 @@ namespace RakUdpP2P.UdpProxyConsole
 
 			//start PeerClient
 			RaknetUdpPeerClient raknetUdpPeerClient = new RaknetUdpPeerClient();
-			var udpPeerClientStarted = raknetUdpPeerClient.Start().Connect(raknetUdpNATPTServer.GetMyIpAddress(), raknetUdpProxy.GetMyIpAddress(), raknetUdpPeerServer.GetMyIpAddress(), raknetUdpPeerServer.GetMyGuid());
+			var udpPeerClientStarted = raknetUdpPeerClient.Start().Connect(raknetUdpNATPTServerAddress, raknetUdpProxyAddress, raknetUdpPeerServer.GetMyIpAddress(), raknetUdpPeerServer.GetMyGuid());
 			if (!udpPeerClientStarted)
 			{
 				Console.WriteLine("UdpPeerClient启动失败");

@@ -25,6 +25,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		/// 有PeerClient断开与PeerServer的连接事件通知
 		/// </summary>
 		public event Action<string, ushort, RaknetUdpPeerServer> OnDisConnect;
+		public event Action<string, ushort, RaknetUdpPeerServer> OnLoseServerConnect;
 
 
 
@@ -35,6 +36,9 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		private RaknetIPAddress _natServerAddress = null;
 		private RaknetIPAddress _coordinatorAddress = null;
 
+		private bool isConnectNatServer = false;
+		private bool isConnectCoordinator = false;
+
 		public RaknetUdpPeerServer()
 		{
 			natPunchthroughClient = new NatPunchthroughClient();
@@ -44,7 +48,10 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			OnConnectFailed += RaknetUdpPeerServer_OnConnectFailed;
 			OnDisConnect += RaknetUdpPeerServer_OnDisConnect;
 			OnReceive += RaknetUdpPeerServer_OnReceive;
+			OnLoseServerConnect += RaknetUdpPeerServer_OnLoseServerConnect;
 		}
+
+		private void RaknetUdpPeerServer_OnLoseServerConnect(string address, ushort port, RaknetUdpPeerServer raknetUdpPeerServer) { }
 
 		private void RaknetUdpPeerServer_OnConnectFailed(string address, ushort port, RaknetUdpPeerServer raknetUdpPeerServer) { }
 
@@ -81,6 +88,8 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			//OnUnconnectedPong += RaknetUdpPeerServer_OnUnconnectedPong;
 			OnConnectionAttemptFailed += RaknetUdpPeerServer_OnConnectionAttemptFailed;
 			OnNoFreeIncomingConnections += RaknetUdpPeerServer_OnNoFreeIncomingConnections;
+			OnConnectionRequestAccepted += RaknetUdpPeerServer_OnConnectionRequestAccepted;
+			OnConnectionLost += RaknetUdpPeerServer_OnConnectionLost;
 			ReceiveThreadStart();
 
 			var connectNatServerResult = rakPeer.Connect(_natServerAddress.Address, _natServerAddress.Port, RaknetConfig.natServerPwd, RaknetConfig.natServerPwd.Length);
@@ -119,6 +128,67 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			return false;
 		}
 
+		private void RaknetUdpPeerServer_OnConnectionLost(string address, ushort port)
+		{
+			if (address == _natServerAddress.Address && port == _natServerAddress.Port)
+			{
+				if (isConnectNatServer)
+				{
+					//失去NatServer的连接
+					isConnectNatServer = false;
+					isThreadRunning = false;
+					rakPeer.Connect(_coordinatorAddress.Address, _coordinatorAddress.Port, "", 0);
+				}
+			}
+			else if (address == _coordinatorAddress.Address && port == _coordinatorAddress.Port)
+			{
+				if (isConnectNatServer)
+				{
+					if (isConnectCoordinator)
+					{
+
+					}
+					else
+					{
+
+					}
+				}
+				else
+				{
+					if (isConnectCoordinator)
+					{
+						//失去Proxy的连接，则表示彻底失去连接，触发事件
+						OnLoseServerConnect(address, port, this);
+					}
+					else
+					{
+
+					}
+				}
+			}
+			else
+			{
+
+			}
+		}
+
+		//尝试连接被接受
+		private void RaknetUdpPeerServer_OnConnectionRequestAccepted(string address, ushort port)
+		{
+			if (address == _natServerAddress.Address && port == _natServerAddress.Port)
+			{
+				isConnectNatServer = true;
+			}
+			else if (address == _coordinatorAddress.Address && port == _coordinatorAddress.Port)
+			{
+				isConnectCoordinator = true;
+			}
+			else
+			{
+
+			}
+		}
+
 		private void RaknetUdpPeerServer_OnNoFreeIncomingConnections(string address, ushort port)
 		{
 			//连接失败
@@ -128,9 +198,31 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		private void RaknetUdpPeerServer_OnConnectionAttemptFailed(string address, ushort port)
 		{
-			//连接失败
-			isThreadRunning = false;
-			OnConnectFailed(address, port, this);
+			if (isConnectNatServer)
+			{
+				if (isConnectCoordinator)
+				{
+
+				}
+				else
+				{
+
+				}
+			}
+			else
+			{
+				if (isConnectCoordinator)
+				{
+
+				}
+				else
+				{
+					//连接失败
+					isThreadRunning = false;
+					OnConnectFailed(address, port, this);
+				}
+			}
+
 		}
 
 		//private void RaknetUdpPeerServer_OnUnconnectedPong(string address, ushort port)
