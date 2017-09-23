@@ -103,6 +103,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 			string peerAddress = "";
 			ushort peerPort = 0;
+			Packet testPacket = null;
 
 			while (true)
 			{
@@ -114,7 +115,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 				{
 					continue;
 				}
-				using (Packet testPacket = rakPeer.Receive())
+				using (testPacket = rakPeer.Receive())
 				{
 					if (testPacket == null || testPacket.data.Count() <= 0)
 					{
