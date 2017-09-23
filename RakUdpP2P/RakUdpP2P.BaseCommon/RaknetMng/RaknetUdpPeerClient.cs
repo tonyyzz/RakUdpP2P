@@ -39,7 +39,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 		private bool _isConnectPeerServer = false; //是否连接上peerServer
 
 		private RaknetIPAddress _natServerAddress = null;//（内部用）
-		private RaknetIPAddress _coordinatorAddress = null;//（内部用）
+		private static RaknetIPAddress _coordinatorAddress = null;//（内部用）
 		private static RaknetIPAddress _proxyServerAddress = null; //（内部用）临时代理服务器地址
 
 		private bool isProxyMsgSending = false; //（内部用）启动代理转发消息时，是否持续发送消息来保持连接
@@ -375,11 +375,10 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			public override void OnForwardingSuccess(string proxyIPAddress, ushort proxyPort, SystemAddress proxyCoordinator, SystemAddress sourceAddress, SystemAddress targetAddress, RakNetGUID targetGuid, UDPProxyClient proxyClientPlugin)
 			{
 				RaknetExtension.WriteInfo("▲▲▲OnForwardingSuccess");
-				//请求转发成功后，连接代理服务器
-				_proxyServerAddress = new RaknetIPAddress(proxyIPAddress, proxyPort);
+				_proxyServerAddress = new RaknetIPAddress(targetAddress.ToString(false), targetAddress.GetPort());
 				var peer = proxyClientPlugin.GetRakPeerInterface();
 				var systemAddress = peer.GetMyBoundAddress();
-				peer.Connect(proxyIPAddress, proxyPort, "", 0);
+				peer.Connect(_proxyServerAddress.Address, _proxyServerAddress.Port, "", 0);
 			}
 
 			public override void OnForwardingInProgress(string proxyIPAddress, ushort proxyPort, SystemAddress proxyCoordinator, SystemAddress sourceAddress, SystemAddress targetAddress, RakNetGUID targetGuid, UDPProxyClient proxyClientPlugin)
@@ -416,6 +415,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 			string myAddress = GetMyAddress().ToString();
 			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port)), true);
 			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_coordinatorAddress.Address, _coordinatorAddress.Port)), true);
+			rakPeer.CloseConnection(new AddressOrGUID(new SystemAddress(_natServerAddress.Address, _natServerAddress.Port)), true);
 			isThreadRunning = false;
 			rakPeer.Shutdown(10);
 			RakPeerInterface.DestroyInstance(rakPeer);

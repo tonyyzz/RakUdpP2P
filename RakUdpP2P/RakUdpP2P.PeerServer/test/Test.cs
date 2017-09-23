@@ -51,6 +51,8 @@ namespace RakUdpP2P.PeerServer
 			raknetUdpPeerServer.OnConnectFailed += RaknetUdpPeerServer_OnConnectFailed;
 			raknetUdpPeerServer.OnReceive += RaknetUdpPeerServer_OnReceive;
 
+			ConsoleCloseHandler.raknetUdpPeerServer = raknetUdpPeerServer;
+			ConsoleCloseHandler.SetConsoleCtrlHandler(ConsoleCloseHandler.cancelHandler, true);
 
 			Console.WriteLine("------------------外网地址：{0}", IPAddressUtils.GetOuterNatIP());
 

@@ -91,7 +91,6 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 		protected void ReceiveThreadStart()
 		{
-			ThreadPool.SetMaxThreads(10, 10);
 			ThreadPool.QueueUserWorkItem(o =>
 			{
 				Run();

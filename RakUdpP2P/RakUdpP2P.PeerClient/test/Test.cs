@@ -65,6 +65,9 @@ namespace RakUdpP2P.PeerClient
 			raknetUdpPeerClient.OnConnectFailed += RaknetUdpPeerClient_OnConnectFailed;
 			raknetUdpPeerClient.OnReceive += RaknetUdpPeerClient_OnReceive;
 
+			ConsoleCloseHandler.raknetUdpPeerClient = raknetUdpPeerClient;
+			ConsoleCloseHandler.SetConsoleCtrlHandler(ConsoleCloseHandler.cancelHandler, true);
+
 			Console.WriteLine("------------------外网地址：{0}", IPAddressUtils.GetOuterNatIP());
 		}
 
