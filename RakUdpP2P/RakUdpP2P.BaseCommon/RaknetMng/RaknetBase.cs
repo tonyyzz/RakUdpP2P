@@ -242,7 +242,6 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 							break;
 					}
 				}
-				
 			}
 		}
 	}
