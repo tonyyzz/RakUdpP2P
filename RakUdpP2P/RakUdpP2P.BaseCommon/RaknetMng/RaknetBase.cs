@@ -107,6 +107,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 
 			while (true)
 			{
+				Thread.Sleep(1);
 				if (!isThreadRunning)
 				{
 					break;
@@ -241,7 +242,7 @@ namespace RakUdpP2P.BaseCommon.RaknetMng
 							break;
 					}
 				}
-				Thread.Sleep(1);
+				
 			}
 		}
 	}
